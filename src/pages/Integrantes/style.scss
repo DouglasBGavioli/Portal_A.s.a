@@ -11,6 +11,12 @@
     padding: 2rem;
     gap: 1rem;
 
+    &__subtitle {
+        @include paragraph(semibold, 14);
+        color: colors(gray-480);
+        text-align: center;
+    }
+
     &__cards {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(264px, 0fr));

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react"
-import "./style.min.css"
+import { useEffect } from "react"
+import "./style.scss"
 import { useStore } from "../../contexts";
 import { TitlePage } from "../../components/TitlePage";
 import AnnouncementCard from "../../components/AnnouncementCard";
@@ -14,7 +14,7 @@ export default function Loja() {
 
     return (
         <div className="dua-loja">
-            <TitlePage title="Nossa loja" subtitle="Bem vindos a loja da Divisão Urutu" />
+            <TitlePage title="Bem vindos a loja do time" subtitle="Compra e vendas de itens de airsoft" />
             <div className="dua-loja__image">
                 {store?.map((item, index) => (
                     <>

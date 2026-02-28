@@ -1,0 +1,82 @@
+@use "../../globalStyle/mixins" as *;
+@use "../../globalStyle/variables" as *;
+
+.dua-button {
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    @include paragraph(semibold, 14);
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    &--full {
+        width: 100%;
+    }
+
+    /* ================= VARIANTS ================= */
+
+    &--primary {
+        background-color: colors(greenUrutuOne);
+        color: colors(light);
+
+        &:hover:not(:disabled) {
+            background-color: colors(greenUrutuTwo);
+        }
+    }
+
+    &--secondary {
+        background-color: colors(backGround2);
+        color: colors(greenUrutuTwo);
+
+        &:hover:not(:disabled) {
+            background-color: colors(greenUrutuOne);
+            color: colors(light);
+        }
+    }
+
+    &--outline {
+        background: transparent;
+        border: 2px solid colors(greenUrutuTwo);
+        color: colors(greenUrutuTwo);
+
+        &:hover:not(:disabled) {
+            background-color: colors(greenUrutuTwo);
+            color: colors(light);
+        }
+    }
+
+    &--danger {
+        background-color: colors(error-200);
+        color: colors(light);
+
+        &:hover:not(:disabled) {
+            background-color: colors(error-300);
+        }
+    }
+
+    /* ================= SIZES ================= */
+
+    &--sm {
+        padding: 0.4rem 0.8rem;
+        @include paragraph(regular, 12);
+    }
+
+    &--md {
+        padding: 0.6rem 1.2rem;
+        @include paragraph(semibold, 14);
+    }
+
+    &--lg {
+        padding: 0.9rem 1.6rem;
+        @include paragraph(semibold, 16);
+    }
+}

@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
-import "./style.min.css";
+import "./style.scss";
 
 type LoaderContextProps = {
   handleLoader(load: boolean): void;

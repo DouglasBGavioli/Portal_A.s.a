@@ -1,7 +1,7 @@
 import { getDocs, collection } from "firebase/firestore";
 import { useState, useCallback, useEffect } from "react";
 import { db } from "../../config/firebaseClient";
-import "./style.min.css"
+import "./style.scss"
 import { TitlePage } from "../../components/TitlePage";
 import ProgressBar from "../../components/ProgressBar";
 import { useMembers } from "../../contexts";
@@ -43,7 +43,10 @@ export default function Integrantes() {
 
     return (
         <div className="dua-members">
-            <TitlePage title="Integrantes" subtitle="Integrantes e suas respectivas patentes(baseadas na experiência adquirida dentro da Divisão Urutu)" />
+            <TitlePage title="Integrantes" subtitle="Integrantes e suas respectivas patentes(baseadas na experiência adquirida dentro do Elite Team)" />
+            <p className="dua-members__subtitle">
+                As patentes não representam uma hierarquia dentro da equipe. Elas sao apenas uma forma de reconhecer o esforço e dedicação de cada membro.
+            </p>
             <div className="dua-members__cards">
                 {members
                     ?.slice()

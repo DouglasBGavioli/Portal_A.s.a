@@ -1,5 +1,5 @@
 import { TitlePage } from "../../components/TitlePage"
-import "./style.min.css"
+import "./style.scss"
 
 export default function Manutencao() {
     return (

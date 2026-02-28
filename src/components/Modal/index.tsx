@@ -1,29 +1,40 @@
 import { useEffect } from "react";
-import ModalLib from 'react-modal';
+import { createPortal } from "react-dom";
+import "./style.scss";
 
-import "./style.min.css";
+interface ModalProps {
+    isOpen: boolean;
+    onRequestClose?: () => void;
+    className?: string;
+    overlayClassName?: string;
+    children: React.ReactNode;
+}
 
-type ModalProps = ModalLib.Props;
+export function Modal({
+    isOpen,
+    onRequestClose,
+    className = "",
+    overlayClassName = "",
+    children,
+}: ModalProps) {
+    useEffect(() => {
+        document.body.style.overflow = isOpen ? "hidden" : "auto";
+    }, [isOpen]);
 
-ModalLib.setAppElement("#root");
+    if (!isOpen) return null;
 
-export function Modal(props: ModalProps) {
-  useEffect(() => {
-    if (props.isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "initial";
-    }
-  }, [props.isOpen]);
-
-  return (
-    <ModalLib {...props}>
-      <div className={`button ${props.onRequestClose ? "" : "hidden"}`}>
-        <button className="closeButton" onClick={props.onRequestClose}>
-          <img src="/cross.svg" alt="fechar" />
-        </button>
-      </div>
-      {props.children}
-    </ModalLib>
-  );
+    return createPortal(
+        <div
+            className={`dua-modal__overlay ${overlayClassName}`}
+            onClick={onRequestClose}
+        >
+            <div
+                className={`dua-modal__content ${className}`}
+                onClick={(e) => e.stopPropagation()}
+            >
+                {children}
+            </div>
+        </div>,
+        document.body
+    );
 }

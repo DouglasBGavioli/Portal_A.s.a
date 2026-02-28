@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { compareAsc, parseISO } from "date-fns"
 
-import "./style.min.css"
+import "./style.scss"
 
 import ImageCard from "../../components/ImageCard";
 import { useMidias } from "../../contexts";

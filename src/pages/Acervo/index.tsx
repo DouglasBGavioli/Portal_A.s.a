@@ -1,4 +1,4 @@
-import "./style.min.css"
+import "./style.scss"
 
 export default function Acervo() {
     return (

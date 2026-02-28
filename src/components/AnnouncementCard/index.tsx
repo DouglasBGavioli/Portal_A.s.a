@@ -1,4 +1,4 @@
-import "./style.min.css"
+import "./style.scss"
 
 type AnnouncementCardProps = {
     url: string

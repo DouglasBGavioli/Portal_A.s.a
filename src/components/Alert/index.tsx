@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import "./style.min.css";
+import "./style.scss";
 
 type AlertProps = {
   variant: "success" | "info" | "warning" | "error";

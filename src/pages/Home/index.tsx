@@ -1,6 +1,6 @@
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom"
-import "./style.min.css"
+import "./style.scss"
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "../../config/firebaseClient"
 import { useLoader, useMidias, useStore } from "../../contexts";
@@ -112,7 +112,7 @@ export default function Home() {
         <div className="dua-home">
             <div className="dua-home__banner" >
                 <div className="dua-home__banner__infos">
-                    <h1>D.U.A</h1>
+                    <h1>A.S.A</h1>
                     <h2>Força e Honra</h2>
                     <button onClick={scrollToSection} className="buttonHome">SAIBA MAIS</button>
                 </div>
@@ -122,19 +122,19 @@ export default function Home() {
             <div ref={sectionRef} className="dua-home__about">
                 <div className="dua-home__about-title">
                     <h2>Sobre a equipe</h2>
-                    <h3>Divisão Urutu Airsoft</h3>
+                    <h3>Elite Team Airsoft</h3>
                 </div>
                 <div className="dua-home__about-description">
-                    <img src={"/logo.png"} alt="Logo dua" />
+                    <img src={"/logo_elite.png"} alt="Logo dua" />
                     <div className="dua-home__about-description-content">
                         <p>
                             <img src={"/logo.png"} alt="Logo dua" />
-                            Divisão Urutu Airsoft, equipe fundada em setembro de 2016 na cidade de Canela-Rs, para prática de Airsoft.</p>
+                            Associação Santiaguense de Airsoft engloba o Elite Team Airsoft, equipe fundada em dezembro de 2019 por Cedenir Colpo na cidade de Santiago-Rs, para prática de Airsoft.</p>
                         <p>
-                            Utilizando como base simulações de ações militares o (Milsim), a Divisão Urutu Airsoft conta hoje com 18 jogadores. Seguindo os passos dos pioneiros do esporte levando sempre para campo os valores de: honra, respeito, disciplina e amizade.</p>
+                            Utilizando como base simulações de ações militares o (Milsim), o Elite Team Airsoft conta hoje com cerca de 20 jogadores. Seguindo os passos dos pioneiros do esporte levando sempre para campo os valores de: honra, respeito, disciplina e amizade.</p>
                     </div>
                 </div>
-                <span>Fortis et adaptabilis, urutu est exemplar virtutis</span>
+                <span>Fortitudine et disciplina, Elite Team virtutis exemplar est.</span>
             </div>
             {((galleryOrdenada?.length! > 0) || (store?.length! > 0)) &&
                 <div className="dua-home__news">
@@ -182,7 +182,7 @@ export default function Home() {
                     <h2>
                         CÓDIGO DE HONRA
                     </h2>
-                    <span>Divisão Urutu Airsoft</span>
+                    <span>Associação Santiaguense de Airsoft</span>
                 </div>
                 <div className="dua-home__honor-topics">
                     <img className="dua-home__honor-topics-imgMob" src={"/safe.png"} alt="Safe" />
@@ -234,6 +234,42 @@ export default function Home() {
                         </ul>
                     </div>
                     <img src={"/laws.png"} alt="Safe" />
+                </div>
+
+                <div className="dua-home__recruit-docs">
+                    <div className="dua-home__recruit-docs-title">
+                        <h2>Documentos do Recruta</h2>
+                        <span>Material obrigatório para novos integrantes</span>
+                    </div>
+
+                    <div className="dua-home__recruit-docs-buttons">
+                        <a
+                            href="https://drive.google.com/file/d/1_KaephUv8DjEN-nuu_ojyre2rv2byw9V/view?usp=drive_link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="buttonHome"
+                        >
+                            Manual do Recruta
+                        </a>
+
+                        <a
+                            href="https://drive.google.com/file/d/1a3H9dYVjDrudRe-Z9d6GX044vwxzS0fn/view?usp=drive_link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="buttonHome"
+                        >
+                            Regulamento Interno
+                        </a>
+
+                        <a
+                            href="https://drive.google.com/file/d/1o5Ymq3xt9cPNLOJSmitoqz4jIMpd6MHR/view?usp=drive_link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="buttonHome"
+                        >
+                            Ficha de Inscrição
+                        </a>
+                    </div>
                 </div>
             </div>
 
