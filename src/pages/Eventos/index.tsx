@@ -278,7 +278,7 @@ export default function Eventos() {
 
             {/* TIMES */}
 
-            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="mt-6 mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
               {teams.map((team: Team) => {
                 const teamPlayers = playersByTeam[team.id] || [];
                 const isFull = teamPlayers.length >= maxPlayersPerTeam;

@@ -139,9 +139,9 @@ export default function History() {
           {/* FECHAR */}
           <button
             onClick={() => setIsModalOpen(false)}
-            className="absolute right-0 top-0 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/70 text-white"
+            className="absolute right-0 top-0 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-white md:h-10 md:w-10"
           >
-            <XMarkIcon className="h-6 w-6" />
+            <XMarkIcon className="h-4 w-4 md:h-6 md:w-6" />
           </button>
 
           <h2 className="text-center text-xl font-semibold text-gray-800">
@@ -157,7 +157,7 @@ export default function History() {
 
             <button
               onClick={() => changeImage("prev")}
-              className="absolute left-2 z-10 rounded-full bg-black/60 p-2 text-white"
+              className="absolute left-2 z-10 hidden rounded-full bg-black/60 p-2 text-white md:flex"
             >
               <ChevronLeftIcon className="h-6 w-6" />
             </button>
@@ -170,7 +170,7 @@ export default function History() {
 
             <button
               onClick={() => changeImage("next")}
-              className="absolute right-2 z-10 rounded-full bg-black/60 p-2 text-white"
+              className="absolute right-2 z-10 hidden rounded-full bg-black/60 p-2 text-white md:flex"
             >
               <ChevronRightIcon className="h-6 w-6" />
             </button>
@@ -193,11 +193,10 @@ export default function History() {
                 alt={`Thumbnail ${index + 1}`}
                 onClick={() => setGalleryPosition(index + 1)}
                 className={`h-16 w-24 cursor-pointer rounded-md object-cover border transition
-                ${
-                  galleryPosition === index + 1
+                ${galleryPosition === index + 1
                     ? "border-brand-500"
                     : "border-transparent"
-                }`}
+                  }`}
               />
 
             ))}
