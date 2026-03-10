@@ -1,6 +1,5 @@
-import { collection, getDocs } from "firebase/firestore";
 import { createContext, ReactNode, useCallback, useContext, useState } from "react";
-import { db } from "../../config/firebaseClient";
+import { supabase } from "../../config/supabaseClient";
 
 interface Store {
     id: string,
@@ -29,9 +28,13 @@ export const StoreProvider = (props: StoreProviderProps) => {
     const [collections, setCollections] = useState('');
 
     const getStore = useCallback(async () => {
-        const querySnapshot = await getDocs(collection(db, "store"));
-        const data = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as unknown as Store
-        setStore(Object.values(data))
+        const { data, error } = await supabase.from("store").select("*");
+        if (error) {
+            console.error("Error fetching store:", error);
+            setStore([]);
+            return;
+        }
+        setStore((data || []) as Store[]);
     }, []);
 
     return (

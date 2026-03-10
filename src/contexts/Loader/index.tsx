@@ -1,7 +1,5 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
-import "./style.scss";
-
 type LoaderContextProps = {
   handleLoader(load: boolean): void;
 };
@@ -18,21 +16,18 @@ export function LoaderProvider(props: LoaderProviderProps) {
   const [isLoad, setIsLoad] = useState(false);
 
   useEffect(() => {
-    if (isLoad) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "initial";
-    }
+    document.body.style.overflow = isLoad ? "hidden" : "initial";
   }, [isLoad]);
 
   const handleLoader = (load: boolean) => setIsLoad(load);
 
   return (
     <LoaderContext.Provider value={{ handleLoader }}>
-      <div className={`dua-loader  ${isLoad ? "loading" : ""}`}>
-        <div className="dua-loader__container" />
+      <div className={`fixed left-0 top-0 z-[1001] h-full w-full items-center justify-center overflow-hidden bg-transparent ${isLoad ? "flex" : "hidden"}`}>
+        <div className="h-20 w-20 animate-spin rounded-full border-8 border-brand-500 border-t-transparent" />
       </div>
       {props.children}
     </LoaderContext.Provider>
   );
 }
+

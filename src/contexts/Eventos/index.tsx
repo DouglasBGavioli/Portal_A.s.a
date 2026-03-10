@@ -1,225 +1,271 @@
 import {
-    collection,
-    addDoc,
-    onSnapshot,
-    query,
-    where,
-    getDocs,
-    serverTimestamp,
-    doc,
-    updateDoc,
-    deleteDoc,
-} from "firebase/firestore";
-import {
-    createContext,
-    useContext,
-    useEffect,
-    useState,
-    ReactNode,
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
 } from "react";
-import { db } from "../../config/firebaseClient";
-
-/* ================= TYPES ================= */
-
-export type Status = "active" | "future" | "past";
+import { supabase } from "../../config/supabaseClient";
 
 export type Team = {
-    id: string;
-    name: string;
-    color: string;
+  id: string;
+  name: string;
+  event_id: string;
+};
+
+export type Player = {
+  id: string;
+  event_id: string;
+  team_id: string;
+  name: string;
+  airsoft_team?: string;
 };
 
 export type Event = {
-    id: string;
-    title: string;
-    date: string;
-    location: string;
-    price: string;
-    image: string;
-    status: Status;
-    teams: Team[];
+  id: string;
+  name: string;
+  location: string;
+  description?: string;
+  cover_image?: string;
+  date: string;
+  opening_time: string;
+  briefing_time: string;
+  game_start_time: string;
+  end_time: string;
+  price: number;
+  max_players: number;
 };
 
-export type Registration = {
-    id: string;
-    name: string;
-    teamId: string;
-    teamName: string;
-    createdAt?: any;
+type RegisterResult = {
+  error?: string;
 };
 
-interface EventContextType {
-    events: Event[];
-    activeEvent: Event | null;
-    registrations: Registration[];
-    loading: boolean;
+type EventsContextType = {
+  events: Event[];
+  selectedEvent: Event | null;
+  teams: Team[];
+  players: Player[];
+  totalPlayers: number;
+  remainingSlots: number;
+  loading: boolean;
 
-    createEvent: (event: Omit<Event, "id">) => Promise<void>;
-    updateEvent: (id: string, data: Partial<Event>) => Promise<void>;
-    deleteEvent: (id: string) => Promise<void>;
+  selectEvent: (event: Event) => Promise<void>;
 
-    listenRegistrations: (eventId: string) => () => void;
-    registerPlayer: (
-        eventId: string,
-        data: {
-            name: string;
-            teamId: string;
-            teamName: string;
-        }
-    ) => Promise<{ success: boolean; message?: string }>;
-}
+  registerPlayer: (
+    teamId: string,
+    name: string,
+    airsoftTeam?: string
+  ) => Promise<RegisterResult>;
+};
 
-/* ================= CONTEXT ================= */
+const EventsContext = createContext({} as EventsContextType);
 
-const EventContext = createContext<EventContextType>(
-    {} as EventContextType
-);
+export const useEvents = () => useContext(EventsContext);
 
-/* ================= PROVIDER ================= */
+export function EventsProvider({ children }: { children: ReactNode }) {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-export function EventProvider({ children }: { children: ReactNode }) {
-    const [events, setEvents] = useState<Event[]>([]);
-    const [registrations, setRegistrations] = useState<Registration[]>([]);
-    const [loading, setLoading] = useState(false);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [players, setPlayers] = useState<Player[]>([]);
 
-    /* ================= LISTEN EVENTS ================= */
+  const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        const eventsRef = collection(db, "events");
+  const totalPlayers = players.length;
 
-        const unsubscribe = onSnapshot(eventsRef, (snapshot) => {
-            const data = snapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...(doc.data() as Omit<Event, "id">),
-            }));
+  const remainingSlots =
+    selectedEvent?.max_players !== undefined
+      ? selectedEvent.max_players - totalPlayers
+      : 0;
 
-            setEvents(data);
-        });
+  /*
+  CARREGAR EVENTOS
+  */
 
-        return unsubscribe;
-    }, []);
+  async function loadEvents() {
+    setLoading(true);
 
-    const activeEvent =
-        events.find((event) => event.status === "active") || null;
+    try {
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .order("date", { ascending: true });
 
-    /* ================= CREATE EVENT ================= */
+      if (error) {
+        console.error(error);
+        return;
+      }
 
-    async function createEvent(event: Omit<Event, "id">) {
-        setLoading(true);
-        await addDoc(collection(db, "events"), {
-            ...event,
-            createdAt: serverTimestamp(),
-        });
-        setLoading(false);
+      setEvents(data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /*
+  SELECIONAR EVENTO
+  */
+
+  async function selectEvent(event: Event) {
+    setLoading(true);
+
+    try {
+      setSelectedEvent(event);
+
+      const [teamsRes, playersRes] = await Promise.all([
+        supabase
+          .from("teams")
+          .select("*")
+          .eq("event_id", event.id)
+          .order("name"),
+
+        supabase
+          .from("players")
+          .select("*")
+          .eq("event_id", event.id)
+          .order("created_at"),
+      ]);
+
+      if (teamsRes.error) console.error(teamsRes.error);
+      if (playersRes.error) console.error(playersRes.error);
+
+      setTeams(teamsRes.data || []);
+      setPlayers(playersRes.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /*
+  REGISTRAR JOGADOR
+  */
+
+  async function registerPlayer(
+    teamId: string,
+    name: string,
+    airsoftTeam?: string
+  ): Promise<RegisterResult> {
+
+    if (!selectedEvent) {
+      return { error: "EVENT_NOT_FOUND" };
     }
 
-    /* ================= UPDATE EVENT ================= */
+    try {
 
-    async function updateEvent(id: string, data: Partial<Event>) {
-        const eventRef = doc(db, "events", id);
-        await updateDoc(eventRef, data);
+      setLoading(true);
+
+      const normalizedName = name.trim().toLowerCase();
+      const normalizedTeam = (airsoftTeam || "").trim().toLowerCase();
+
+      /*
+      Buscar jogadores já inscritos no evento
+      */
+
+      const { data: existingPlayers, error: fetchError } = await supabase
+        .from("players")
+        .select("*")
+        .eq("event_id", selectedEvent.id);
+
+      if (fetchError) {
+        console.error(fetchError);
+        return { error: "UNKNOWN_ERROR" };
+      }
+
+      /*
+      Jogador já inscrito neste time
+      */
+
+      const alreadyInSameTeam = existingPlayers?.find(
+        (p) =>
+          p.team_id === teamId &&
+          p.name.toLowerCase() === normalizedName &&
+          (p.airsoft_team || "").toLowerCase() === normalizedTeam
+      );
+
+      if (alreadyInSameTeam) {
+        return { error: "PLAYER_ALREADY_REGISTERED" };
+      }
+
+      /*
+      Jogador já inscrito em outro time
+      */
+
+      const alreadyInOtherTeam = existingPlayers?.find(
+        (p) =>
+          p.team_id !== teamId &&
+          p.name.toLowerCase() === normalizedName &&
+          (p.airsoft_team || "").toLowerCase() === normalizedTeam
+      );
+
+      if (alreadyInOtherTeam) {
+        return { error: "PLAYER_IN_OTHER_TEAM" };
+      }
+
+      /*
+      Verificar vagas do evento
+      */
+
+      if (existingPlayers && existingPlayers.length >= selectedEvent.max_players) {
+        return { error: "EVENT_FULL" };
+      }
+
+      /*
+      Inserir jogador
+      */
+
+      const { data, error } = await supabase
+        .from("players")
+        .insert({
+          event_id: selectedEvent.id,
+          team_id: teamId,
+          name,
+          airsoft_team: airsoftTeam,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error(error);
+        return { error: "UNKNOWN_ERROR" };
+      }
+
+      setPlayers((prev) => [...prev, data]);
+
+      return {};
+
+    } catch (err) {
+
+      console.error(err);
+      return { error: "UNKNOWN_ERROR" };
+
+    } finally {
+      setLoading(false);
     }
+  }
 
-    /* ================= DELETE EVENT ================= */
+  useEffect(() => {
+    loadEvents();
+  }, []);
 
-    async function deleteEvent(id: string) {
-        const eventRef = doc(db, "events", id);
-        await deleteDoc(eventRef);
-    }
-
-    /* ================= LISTEN REGISTRATIONS ================= */
-
-    function listenRegistrations(eventId: string) {
-        const registrationsRef = collection(
-            db,
-            "events",
-            eventId,
-            "registrations"
-        );
-
-        const unsubscribe = onSnapshot(registrationsRef, (snapshot) => {
-            const data = snapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...(doc.data() as Omit<Registration, "id">),
-            }));
-
-            setRegistrations(data);
-        });
-
-        return unsubscribe;
-    }
-
-    /* ================= REGISTER PLAYER ================= */
-
-    async function registerPlayer(
-        eventId: string,
-        data: {
-            name: string;
-            teamId: string;
-            teamName: string;
-        }
-    ) {
-        if (!data.name.trim()) {
-            return { success: false, message: "Nome obrigatório" };
-        }
-
-        setLoading(true);
-
-        const registrationsRef = collection(
-            db,
-            "events",
-            eventId,
-            "registrations"
-        );
-
-        const duplicateQuery = query(
-            registrationsRef,
-            where("name", "==", data.name)
-        );
-
-        const duplicateSnapshot = await getDocs(duplicateQuery);
-
-        if (!duplicateSnapshot.empty) {
-            setLoading(false);
-            return {
-                success: false,
-                message: "Você já está inscrito neste evento.",
-            };
-        }
-
-        await addDoc(registrationsRef, {
-            name: data.name,
-            teamId: data.teamId,
-            teamName: data.teamName,
-            createdAt: serverTimestamp(),
-        });
-
-        setLoading(false);
-
-        return { success: true };
-    }
-
-    return (
-        <EventContext.Provider
-            value={{
-                events,
-                activeEvent,
-                registrations,
-                loading,
-                createEvent,
-                updateEvent,
-                deleteEvent,
-                listenRegistrations,
-                registerPlayer,
-            }}
-        >
-            {children}
-        </EventContext.Provider>
-    );
-}
-
-/* ================= HOOK ================= */
-
-export function useEvents() {
-    return useContext(EventContext);
+  return (
+    <EventsContext.Provider
+      value={{
+        events,
+        selectedEvent,
+        teams,
+        players,
+        totalPlayers,
+        remainingSlots,
+        loading,
+        selectEvent,
+        registerPlayer,
+      }}
+    >
+      {children}
+    </EventsContext.Provider>
+  );
 }

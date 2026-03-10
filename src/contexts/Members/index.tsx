@@ -1,6 +1,5 @@
-import { collection, getDocs } from "firebase/firestore";
 import { createContext, ReactNode, useCallback, useContext, useState } from "react";
-import { db } from "../../config/firebaseClient";
+import { supabase } from "../../config/supabaseClient";
 
 interface Members {
     id: string; xp: number, name: string, insta: string, level: number, file: string
@@ -22,9 +21,13 @@ export const MembersProvider = (props: MembersProviderProps) => {
     const [members, setMembers] = useState<Members[] | null>([]);
 
     const getMembers = useCallback(async () => {
-        const querySnapshot = await getDocs(collection(db, "members"));
-        const data = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as unknown as {}
-        setMembers(Object.values(data))
+        const { data, error } = await supabase.from("members").select("*");
+        if (error) {
+            console.error("Error fetching members:", error);
+            setMembers([]);
+            return;
+        }
+        setMembers((data || []) as Members[]);
     }, []);
 
     return (
