@@ -15,8 +15,6 @@ export default function Eventos() {
   const { events, players } = useEvents();
   const navigate = useNavigate();
 
-  const now = new Date();
-
   function formatDate(dateString: string) {
     return new Date(dateString).toLocaleDateString("pt-BR");
   }
