@@ -19,7 +19,7 @@ export default function Integrantes() {
   }, [getMembers]);
 
   const sortedMembers = useMemo(() => {
-    return [...(members || [])].sort((a, b) => b.level - a.level);
+    return [...(members ?? [])].sort((a, b) => b.level - a.level);
   }, [members]);
 
   return (
@@ -47,7 +47,7 @@ export default function Integrantes() {
 
         {sortedMembers.map((member) => {
 
-          const level = ArrayLevel[member.level];
+          const level = ArrayLevel[member.level] || ArrayLevel[0];
 
           return (
             <div
@@ -61,7 +61,7 @@ export default function Integrantes() {
                 <div className="absolute left-1/2 top-1 h-3 w-3 -translate-x-1/2 rounded-full bg-gray-700"></div>
 
                 <img
-                  src={member.file}
+                  src={member.file || "/placeholder.png"}
                   alt={member.name}
                   className="h-full w-full object-cover"
                 />
@@ -89,13 +89,13 @@ export default function Integrantes() {
                 <div className="mt-4 flex flex-col items-center">
 
                   <img
-                    src={level?.img}
-                    alt={level?.lvl}
+                    src={level.img}
+                    alt={level.lvl}
                     className="h-14 w-14 object-contain"
                   />
 
                   <span className="mt-1 text-sm font-bold tracking-wider text-gray-800">
-                    {level?.lvl}
+                    {level.lvl}
                   </span>
 
                   <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">
