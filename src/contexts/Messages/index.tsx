@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useMemo, ReactNode } from "react";
 import { supabase } from "../../config/supabaseClient";
 import { useLoader } from "../Loader";
 
@@ -60,14 +60,14 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [data, handleLoader]);
 
+    const value = useMemo(() => ({
+        data,
+        setData,
+        sendMessage,
+    }), [data, sendMessage]);
+
     return (
-        <MessageContext.Provider
-            value={{
-                data,
-                setData,
-                sendMessage,
-            }}
-        >
+        <MessageContext.Provider value={value}>
             {children}
         </MessageContext.Provider>
     );

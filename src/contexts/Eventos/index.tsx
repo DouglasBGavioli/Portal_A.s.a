@@ -3,6 +3,8 @@ import {
   useContext,
   useState,
   useEffect,
+  useCallback,
+  useMemo,
   ReactNode,
 } from "react";
 import { supabase } from "../../config/supabaseClient";
@@ -50,7 +52,8 @@ type EventsContextType = {
   remainingSlots: number;
   loading: boolean;
 
-  selectEvent: (event: Event) => Promise<void>;
+  loadEvents: () => Promise<void>;
+  selectEvent: (slug: string) => Promise<void>;
 
   registerPlayer: (
     teamId: string,
@@ -83,7 +86,7 @@ export function EventsProvider({ children }: { children: ReactNode }) {
   CARREGAR EVENTOS
   */
 
-  async function loadEvents() {
+  const loadEvents = useCallback(async () => {
     setLoading(true);
 
     try {
@@ -103,13 +106,30 @@ export function EventsProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   /*
   SELECIONAR EVENTO
   */
 
-  async function selectEvent(event: Event) {
+  const selectEvent = useCallback(async (slug: string) => {
+    if (!slug) {
+      return;
+    }
+
+    const event = events.find((item) => item.slug === slug);
+
+    if (!event) {
+      setSelectedEvent(null);
+      setTeams([]);
+      setPlayers([]);
+      return;
+    }
+
+    if (selectedEvent?.id === event.id && teams.length > 0) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -139,17 +159,17 @@ export function EventsProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [events, selectedEvent?.id, teams.length]);
 
   /*
   REGISTRAR JOGADOR
   */
 
-  async function registerPlayer(
+  const registerPlayer = useCallback(async (
     teamId: string,
     name: string,
     airsoftTeam?: string
-  ): Promise<RegisterResult> {
+  ): Promise<RegisterResult> => {
 
     if (!selectedEvent) {
       return { error: "EVENT_NOT_FOUND" };
@@ -246,26 +266,38 @@ export function EventsProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [selectedEvent]);
 
   useEffect(() => {
     loadEvents();
-  }, []);
+  }, [loadEvents]);
+
+  const value = useMemo(() => ({
+    events,
+    selectedEvent,
+    teams,
+    players,
+    totalPlayers,
+    remainingSlots,
+    loading,
+    loadEvents,
+    selectEvent,
+    registerPlayer,
+  }), [
+    events,
+    selectedEvent,
+    teams,
+    players,
+    totalPlayers,
+    remainingSlots,
+    loading,
+    loadEvents,
+    selectEvent,
+    registerPlayer,
+  ]);
 
   return (
-    <EventsContext.Provider
-      value={{
-        events,
-        selectedEvent,
-        teams,
-        players,
-        totalPlayers,
-        remainingSlots,
-        loading,
-        selectEvent,
-        registerPlayer,
-      }}
-    >
+    <EventsContext.Provider value={value}>
       {children}
     </EventsContext.Provider>
   );

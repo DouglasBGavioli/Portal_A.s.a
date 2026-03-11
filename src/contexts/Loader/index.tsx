@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 type LoaderContextProps = {
   handleLoader(load: boolean): void;
@@ -19,10 +19,12 @@ export function LoaderProvider(props: LoaderProviderProps) {
     document.body.style.overflow = isLoad ? "hidden" : "initial";
   }, [isLoad]);
 
-  const handleLoader = (load: boolean) => setIsLoad(load);
+  const handleLoader = useCallback((load: boolean) => setIsLoad(load), []);
+
+  const value = useMemo(() => ({ handleLoader }), [handleLoader]);
 
   return (
-    <LoaderContext.Provider value={{ handleLoader }}>
+    <LoaderContext.Provider value={value}>
       <div className={`fixed left-0 top-0 z-[1001] h-full w-full items-center justify-center overflow-hidden bg-transparent ${isLoad ? "flex" : "hidden"}`}>
         <div className="h-20 w-20 animate-spin rounded-full border-8 border-brand-500 border-t-transparent" />
       </div>

@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { compareAsc, parseISO } from "date-fns";
 
@@ -8,6 +8,7 @@ import { useStore } from "../../contexts";
 import { Gallery, GalleryImage, useImages } from "../../contexts";
 import { useMessages } from "../../contexts";
 import { useEvents } from "../../contexts/Eventos";
+import { BanknotesIcon, CalendarDaysIcon, MapPinIcon } from "@heroicons/react/24/outline";
 
 const buttonClass = "inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-brand-600";
 
@@ -29,27 +30,39 @@ export default function Home() {
     getStore();
   }, [getMidias, getStore]);
 
-  const now = new Date();
+  const activeEvent = useMemo(() => {
+    const now = new Date();
 
-  const activeEvent = events
-    ?.filter((event) => new Date(event.date) >= now)
-    ?.sort(
-      (a, b) =>
-        new Date(a.date).getTime() -
-        new Date(b.date).getTime()
-    )[0];
+    return events
+      ?.filter((event) => new Date(event.date) >= now)
+      ?.sort(
+        (a, b) =>
+          new Date(a.date).getTime() -
+          new Date(b.date).getTime()
+      )[0];
+  }, [events]);
 
-  const daysLeft = activeEvent
-    ? Math.ceil(
+  const daysLeft = useMemo(() => {
+    if (!activeEvent) {
+      return 0;
+    }
+
+    const now = new Date();
+
+    return Math.ceil(
       (new Date(activeEvent.date).getTime() - now.getTime()) /
       (1000 * 60 * 60 * 24)
-    )
-    : 0;
+    );
+  }, [activeEvent]);
 
-  const remainingSlots = activeEvent
-    ? activeEvent.max_players -
-    players.filter((p) => p.event_id === activeEvent.id).length
-    : 0;
+  const remainingSlots = useMemo(() => {
+    if (!activeEvent) {
+      return 0;
+    }
+
+    return activeEvent.max_players -
+      players.filter((p) => p.event_id === activeEvent.id).length;
+  }, [activeEvent, players]);
 
   const handleData = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -99,11 +112,13 @@ export default function Home() {
     }));
   }, [setData]);
 
-  const galleryOrdenada = [...(gallery || [])].sort((a: Gallery, b: Gallery) => {
-    const dataA = parseISO(a.data);
-    const dataB = parseISO(b.data);
-    return compareAsc(dataB, dataA);
-  });
+  const galleryOrdenada = useMemo(() => {
+    return [...(gallery || [])].sort((a: Gallery, b: Gallery) => {
+      const dataA = parseISO(a.data);
+      const dataB = parseISO(b.data);
+      return compareAsc(dataB, dataA);
+    });
+  }, [gallery]);
 
   function formatCurrency(value: number): string {
     return value.toLocaleString("pt-BR", {
@@ -134,7 +149,7 @@ export default function Home() {
         </div>
 
         <div className="grid items-center gap-8 rounded-xl bg-white p-6 shadow md:grid-cols-[220px_1fr]">
-          <img src="/logo-elite.png" alt="Logo elite" className="mx-auto h-44 w-44 object-contain" />
+          <img src="/logoelite.png" alt="Logo elite" className="mx-auto h-44 w-44 object-contain" />
           <div className="space-y-4 text-gray-700">
             <p className="flex items-start gap-3">
               <img src="/logo.png" alt="Logo asa" className="mt-2 h-10 w-10 object-contain" />
@@ -189,16 +204,19 @@ export default function Home() {
                     {activeEvent.name}
                   </h3>
 
-                  <span className="text-sm text-gray-600">
-                    📍 {activeEvent.location}
+                  <span className="flex items-center gap-2 text-sm text-gray-600">
+                    <MapPinIcon className="h-4 w-4 text-red-500" />
+                    {activeEvent.location}
                   </span>
 
-                  <span className="text-sm text-gray-600">
-                    📅 {activeEvent.date}
+                  <span className="flex items-center gap-2 text-sm text-gray-600">
+                    <CalendarDaysIcon className="h-4 w-4 text-blue-500" />
+                    {new Date(activeEvent.date).toLocaleDateString("pt-BR")}
                   </span>
 
-                  <span className="text-sm text-gray-600">
-                    💰 {formatCurrency(activeEvent.price)}
+                  <span className="flex items-center gap-2 text-sm text-gray-600">
+                    <BanknotesIcon className="h-4 w-4 text-green-500" />
+                    {formatCurrency(activeEvent.price)}
                   </span>
 
                 </div>

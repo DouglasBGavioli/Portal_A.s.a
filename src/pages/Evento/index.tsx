@@ -1,6 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useMemo, useState, useEffect } from "react";
-
+import { useMemo, useState, useEffect, useCallback } from "react";
 
 import { TitlePage } from "../../components/TitlePage";
 import Button from "../../components/Button";
@@ -32,7 +31,10 @@ export default function Evento() {
     const [teamId, setTeamId] = useState("");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+    /* EVENTO */
+
     const event = useMemo(() => {
+        if (!slug) return undefined;
         return events.find((e) => e.slug === slug);
     }, [events, slug]);
 
@@ -40,28 +42,21 @@ export default function Evento() {
         return new Date(dateString).toLocaleDateString("pt-BR");
     }
 
-    /* ============================= */
-    /* CARREGAR DADOS DO EVENTO      */
-    /* ============================= */
+    /* CARREGAR EVENTO */
 
     useEffect(() => {
-        if (event) {
-            selectEvent(event);
-        }
-    }, [event, selectEvent]);
+        if (!slug) return;
+        selectEvent(slug);
+    }, [slug, selectEvent]);
 
-    /* ============================= */
-    /* TIMES DO EVENTO               */
-    /* ============================= */
+    /* TIMES */
 
     const eventTeams = useMemo(() => {
         if (!event) return [];
         return teams.filter((team) => team.event_id === event.id);
     }, [teams, event]);
 
-    /* ============================= */
-    /* PLAYERS POR TIME              */
-    /* ============================= */
+    /* PLAYERS POR TIME */
 
     const playersByTeam = useMemo<Record<string, Player[]>>(() => {
         return players.reduce((acc, player) => {
@@ -71,20 +66,44 @@ export default function Evento() {
         }, {} as Record<string, Player[]>);
     }, [players]);
 
-    /* ============================= */
-    /* VAGAS POR TIME                */
-    /* ============================= */
+    /* LIMITES POR TIME (SOLUÇÃO DAS VAGAS ÍMPARES) */
 
-    const maxPlayersPerTeam =
-        eventTeams.length > 0 && event
-            ? Math.floor(event.max_players / eventTeams.length)
-            : 0;
+    const teamLimits = useMemo(() => {
+        if (!event || eventTeams.length === 0) return {};
 
-    /* ============================= */
-    /* EVENTO NÃO ENCONTRADO         */
-    /* ============================= */
+        const base = Math.floor(event.max_players / eventTeams.length);
+        const remainder = event.max_players % eventTeams.length;
 
-    if (!event) {
+        const limits: Record<string, number> = {};
+
+        eventTeams.forEach((team, index) => {
+            limits[team.id] = base + (index < remainder ? 1 : 0);
+        });
+
+        return limits;
+    }, [event, eventTeams]);
+
+    /* SHARE */
+
+    const handleShare = useCallback(async () => {
+        if (!event) return;
+
+        try {
+            if (navigator.share) {
+                await navigator.share({
+                    title: event.name,
+                    url: window.location.href,
+                });
+            } else {
+                await navigator.clipboard.writeText(window.location.href);
+                alert("Link copiado!");
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }, [event]);
+
+    if (!event && events.length > 0) {
         return (
             <div className="mx-auto max-w-7xl px-4 py-10">
                 <p className="text-gray-600">Evento não encontrado.</p>
@@ -92,9 +111,9 @@ export default function Evento() {
         );
     }
 
-    /* ============================= */
-    /* INSCRIÇÃO                     */
-    /* ============================= */
+    if (!event) return null;
+
+    /* INSCRIÇÃO */
 
     async function handleRegister() {
         if (!teamId || !name.trim()) return;
@@ -118,30 +137,22 @@ export default function Evento() {
         setFormMode(false);
     }
 
-    /* ============================= */
-    /* PAGE                          */
-    /* ============================= */
-
     return (
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-10 md:px-8">
 
             <TitlePage title={event.name} subtitle="Detalhes do evento" />
 
-            {/* HEADER EVENTO */}
+            {/* HEADER */}
 
             <div className="grid gap-8 md:grid-cols-[380px_1fr]">
-
-                {/* POSTER */}
 
                 <div className="overflow-hidden rounded-xl bg-black shadow-lg">
                     <img
                         src={event.cover_image}
                         alt={event.name}
-                        className="w-full object-contain"
+                        className="w-full h-full object-cover"
                     />
                 </div>
-
-                {/* INFO */}
 
                 <div className="flex flex-col gap-6">
 
@@ -169,17 +180,29 @@ export default function Evento() {
                         </div>
 
                     </div>
-                    <div className="mt-auto inline-flex items-center gap-2 rounded-m">
-                        <button className="px-4 py-2 text-sm text-white bg-green-500 rounded-lg hover:bg-green-600 transition"
-                            onClick={() => navigator.share({ url: window.location.href })}>
-                            <ShareIcon className="h-5 w-5 text-white" />
-                            Compartilhar evento
+
+                    <div className="mt-auto flex gap-2">
+
+                        <button
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-green-500 rounded-lg hover:bg-green-600"
+                            onClick={handleShare}
+                        >
+                            <ShareIcon className="h-5 w-5" />
+                            Compartilhar
                         </button>
-                        <button className="px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-600 transition" onClick={() => navigator.clipboard.writeText(window.location.href).then(() => alert("Link copiado para a área de transferência!"))}>
-                            <ShareIcon className="h-5 w-5 text-white" />
+
+                        <button
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700"
+                            onClick={() =>
+                                navigator.clipboard.writeText(window.location.href)
+                            }
+                        >
+                            <ShareIcon className="h-5 w-5" />
                             Copiar link
                         </button>
+
                     </div>
+
                 </div>
 
             </div>
@@ -191,12 +214,14 @@ export default function Evento() {
                     <h2 className="text-xl font-semibold text-gray-800">
                         Jogadores inscritos
                     </h2>
+
                     <div className="grid gap-6 md:grid-cols-2">
 
                         {eventTeams.map((team: Team) => {
 
                             const teamPlayers = playersByTeam[team.id] || [];
-                            const remaining = maxPlayersPerTeam - teamPlayers.length;
+                            const teamLimit = teamLimits[team.id] || 0;
+                            const remaining = teamLimit - teamPlayers.length;
 
                             return (
 
@@ -205,26 +230,19 @@ export default function Evento() {
                                     className="flex flex-col gap-3 rounded-xl border bg-white p-5 shadow-sm"
                                 >
 
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex justify-between">
 
                                         <h3 className="font-semibold text-gray-800">
                                             {team.name}
                                         </h3>
 
                                         <span className="text-xs text-gray-500">
-                                            {teamPlayers.length}/{maxPlayersPerTeam}
+                                            {teamPlayers.length}/{teamLimit}
                                         </span>
 
                                     </div>
 
-                                    {/* PLAYERS */}
-
-                                    <div
-                                        className={`flex flex-col gap-1 text-sm ${teamPlayers.length > 5
-                                            ? "max-h-[160px] overflow-y-auto pr-1"
-                                            : ""
-                                            }`}
-                                    >
+                                    <div className="flex flex-col gap-1 text-sm">
 
                                         {teamPlayers.length === 0 && (
                                             <span className="italic text-gray-400">
@@ -236,7 +254,7 @@ export default function Evento() {
 
                                             <div
                                                 key={player.id}
-                                                className="flex items-center justify-between rounded bg-gray-50 px-2 py-1"
+                                                className="flex justify-between rounded bg-gray-50 px-2 py-1"
                                             >
 
                                                 <span>{player.name}</span>
@@ -254,13 +272,13 @@ export default function Evento() {
                                     </div>
 
                                     {remaining > 0 && (
-                                        <span className="text-xs font-medium text-green-600">
+                                        <span className="text-xs text-green-600">
                                             +{remaining} vagas disponíveis
                                         </span>
                                     )}
 
                                     {remaining <= 0 && (
-                                        <span className="text-xs font-medium text-red-500">
+                                        <span className="text-xs text-red-500">
                                             Time completo
                                         </span>
                                     )}
@@ -275,7 +293,7 @@ export default function Evento() {
                 </>
             )}
 
-            {/* INSCRIÇÃO */}
+            {/* BOTÃO INSCRIÇÃO */}
 
             {!formMode && eventTeams.length > 0 && (
 
@@ -289,6 +307,8 @@ export default function Evento() {
                 </Button>
 
             )}
+
+            {/* FORM */}
 
             {formMode && (
 
@@ -321,12 +341,14 @@ export default function Evento() {
                         onChange={(e) => setTeamId(e.target.value)}
                         className="rounded border px-4 py-3"
                     >
+
                         <option value="">Selecione o time</option>
 
                         {eventTeams.map((team) => {
 
                             const teamPlayers = playersByTeam[team.id] || [];
-                            const isFull = teamPlayers.length >= maxPlayersPerTeam;
+                            const teamLimit = teamLimits[team.id] || 0;
+                            const isFull = teamPlayers.length >= teamLimit;
 
                             return (
                                 <option

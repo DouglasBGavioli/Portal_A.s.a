@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { compareAsc, parseISO } from "date-fns";
 
 import { Gallery, GalleryImage, useImages } from "../../contexts";
@@ -61,11 +61,13 @@ export default function History() {
     if (distance < -50) changeImage("prev");
   };
 
-  const galleryOrdenada = [...gallery].sort((a: Gallery, b: Gallery) => {
-    const dataA = parseISO(a.data);
-    const dataB = parseISO(b.data);
-    return compareAsc(dataB, dataA);
-  });
+  const galleryOrdenada = useMemo(() => {
+    return [...gallery].sort((a: Gallery, b: Gallery) => {
+      const dataA = parseISO(a.data);
+      const dataB = parseISO(b.data);
+      return compareAsc(dataB, dataA);
+    });
+  }, [gallery]);
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-10 md:px-8">

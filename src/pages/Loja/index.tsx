@@ -121,9 +121,24 @@ export default function Loja() {
                 </label>
 
                 <input
-                  type="text"
+                  type="tel"
+                  inputMode="numeric"
                   value={contact}
-                  onChange={(e) => setContact(e.target.value)}
+                  onChange={(e) => {
+                    const numbers = e.target.value.replace(/\D/g, "");
+
+                    let formatted = numbers;
+
+                    if (numbers.length > 2) {
+                      formatted = `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+                    }
+
+                    if (numbers.length > 7) {
+                      formatted = `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+                    }
+
+                    setContact(formatted);
+                  }}
                   placeholder="(55) 99999-9999"
                   className="rounded border p-2 text-sm"
                 />
