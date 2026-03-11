@@ -32,7 +32,9 @@ export default function Evento() {
     const [teamId, setTeamId] = useState("");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    const event = events.find((e) => e.slug === slug);
+    const event = useMemo(() => {
+        return events.find((e) => e.slug === slug);
+    }, [events, slug]);
 
     function formatDate(dateString: string) {
         return new Date(dateString).toLocaleDateString("pt-BR");
@@ -46,7 +48,7 @@ export default function Evento() {
         if (event) {
             selectEvent(event);
         }
-    }, [event]);
+    }, [event, selectEvent]);
 
     /* ============================= */
     /* TIMES DO EVENTO               */

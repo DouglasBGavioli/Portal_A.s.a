@@ -9,22 +9,6 @@ import { Gallery, GalleryImage, useImages } from "../../contexts";
 import { useMessages } from "../../contexts";
 import { useEvents } from "../../contexts/Eventos";
 
-interface FormData {
-  email: string;
-  mensagem: string;
-  nome: string;
-  telefone: string;
-  tempoPratica: string;
-}
-
-const INITIAL_DATA = {
-  email: "",
-  mensagem: "",
-  nome: "",
-  telefone: "",
-  tempoPratica: "",
-} as FormData;
-
 const buttonClass = "inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-brand-600";
 
 export default function Home() {
