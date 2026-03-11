@@ -134,7 +134,7 @@ export default function Home() {
         </div>
 
         <div className="grid items-center gap-8 rounded-xl bg-white p-6 shadow md:grid-cols-[220px_1fr]">
-          <img src="/logo_elite.png" alt="Logo elite" className="mx-auto h-44 w-44 object-contain" />
+          <img src="/logo-elite.png" alt="Logo elite" className="mx-auto h-44 w-44 object-contain" />
           <div className="space-y-4 text-gray-700">
             <p className="flex items-start gap-3">
               <img src="/logo.png" alt="Logo asa" className="mt-2 h-10 w-10 object-contain" />
