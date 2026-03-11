@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { TitlePage } from "../../components/TitlePage";
-import ProgressBar from "../../components/ProgressBar";
 import { useMembers } from "../../contexts";
 
 const ArrayLevel = [
@@ -20,54 +19,100 @@ export default function Integrantes() {
   }, [getMembers]);
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-10 md:px-8">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-10 md:px-8">
+
       <TitlePage
         title="Integrantes"
-        subtitle="Integrantes e suas respectivas patentes(baseadas na experiência adquirida dentro do Elite Team)"
+        subtitle="Integrantes e suas respectivas patentes (baseadas na experiência adquirida dentro do Elite Team)"
       />
-      <p className="text-base text-gray-600">
-        As patentes não representam uma hierarquia dentro da equipe. Elas sao apenas uma forma de reconhecer o esforço e dedicação de cada membro.
+
+      <p className="max-w-3xl text-base text-gray-600">
+        As patentes não representam hierarquia. Elas reconhecem dedicação e
+        experiência adquirida durante atividades e eventos da equipe.
       </p>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+
+      {!members || members.length === 0 && (
+        <div className="rounded-lg bg-white p-6 text-center shadow">
+          <p className="text-gray-500">Nenhum integrante cadastrado no momento.</p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3">
+
         {members
           ?.slice()
           .sort((a, b) => (a.level > b.level ? -1 : 1))
-          ?.map((member, index) => (
-            <div className="rounded-lg bg-white p-4 shadow" key={index}>
-              <div className="flex gap-4">
-                <div className="h-[220px] w-[160px] shrink-0 overflow-hidden rounded-md">
-                  <img src={member.file} alt="Card" className="h-full w-full object-cover" />
+          .map((member) => {
+
+            const level = ArrayLevel[member.level];
+
+            return (
+              <div
+                key={member.id}
+                className="relative flex items-center justify-center py-10"
+              >
+
+                {/* DOG TAG FOTO */}
+                <div className="relative z-10 h-48 w-32 rotate-[-6deg] overflow-hidden rounded-xl border-[6px] border-gray-800 bg-gray-200 shadow-xl">
+
+                  {/* furo */}
+                  <div className="absolute left-1/2 top-1 h-3 w-3 -translate-x-1/2 rounded-full bg-gray-700"></div>
+
+                  <img
+                    src={member.file}
+                    alt={member.name}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
-                <div className="flex w-full flex-col justify-between gap-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h2 className="text-lg font-semibold text-gray-800">{member.name}</h2>
-                      <a
-                        className="text-sm text-brand-600 hover:underline"
-                        href={`instagram://user?username=${member.insta.replace("@", "")}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          window.location.href = `https://www.instagram.com/${member.insta.replace("@", "")}/`;
-                        }}
-                      >
-                        {member.insta}
-                      </a>
-                    </div>
-                    <div className="flex flex-col items-center gap-1">
-                      <img src={ArrayLevel[member?.level]?.img} alt={ArrayLevel[member.level]?.lvl} title={ArrayLevel[member.level]?.lvl} className="h-12 w-12 object-contain" />
-                      <p className="text-xs font-semibold text-gray-700">{ArrayLevel[member.level]?.lvl}</p>
-                    </div>
+
+                {/* DOG TAG INFO */}
+                <div className="relative -ml-6 flex h-52 w-40 rotate-[4deg] flex-col items-center justify-center rounded-xl border-[6px] border-gray-800 bg-gray-100 p-4 text-center shadow-xl">
+
+                  {/* furo */}
+                  <div className="absolute left-1/2 top-1 h-3 w-3 -translate-x-1/2 rounded-full bg-gray-700"></div>
+
+                  {/* NOME */}
+                  <h2 className="text-sm font-bold tracking-wider text-gray-800">
+                    {member.name}
+                  </h2>
+
+                  {/* INSTAGRAM */}
+                  <a
+                    className="text-xs text-brand-600 hover:underline"
+                    href={`instagram://user?username=${member.insta.replace("@", "")}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.location.href = `https://www.instagram.com/${member.insta.replace("@", "")}/`;
+                    }}
+                  >
+                    {member.insta}
+                  </a>
+
+                  {/* PATENTE GRANDE */}
+                  <div className="mt-4 flex flex-col items-center">
+
+                    <img
+                      src={level?.img}
+                      alt={level?.lvl}
+                      className="h-14 w-14 object-contain"
+                    />
+
+                    <span className="mt-1 text-sm font-bold tracking-wider text-gray-800">
+                      {level?.lvl}
+                    </span>
+
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">
+                      Elite Team
+                    </span>
+
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <p className="font-semibold text-gray-700">XP</p>
-                    <ProgressBar percentage={member.level === 4 ? 100 : member.xp} />
-                  </div>
+
                 </div>
+
               </div>
-            </div>
-          ))}
+            );
+          })}
       </div>
     </div>
   );
 }
-

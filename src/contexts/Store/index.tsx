@@ -1,51 +1,94 @@
-import { createContext, ReactNode, useCallback, useContext, useState } from "react";
+import {
+    createContext,
+    ReactNode,
+    useCallback,
+    useContext,
+    useMemo,
+    useState,
+} from "react";
 import { supabase } from "../../config/supabaseClient";
 
 interface Store {
-    id: string,
-    value?: string,
-    contact: number,
-    text: string,
-    url: string[]
+    id: string;
+    value?: number;
+    contact: string;
+    text: string;
+    url: string;
 }
 
 type StoreContextProvider = {
-    getStore: () => Promise<void>,
-    collections: string,
-    setCollections: (collection: string) => void
-    store: Store[] | null
-}
+    store: Store[];
+    collections: string;
+    setCollections: React.Dispatch<React.SetStateAction<string>>;
+    getStore: () => Promise<void>;
+};
 
 type StoreProviderProps = {
     children: ReactNode;
 };
 
-export const StoreContext = createContext({} as StoreContextProvider);
-export const useStore = () => useContext(StoreContext);
+const StoreContext = createContext<StoreContextProvider | undefined>(
+    undefined
+);
 
-export const StoreProvider = (props: StoreProviderProps) => {
-    const [store, setStore] = useState<Store[] | null>([]);
-    const [collections, setCollections] = useState('');
+export const useStore = () => {
+    const context = useContext(StoreContext);
+
+    if (!context) {
+        throw new Error("useStore must be used inside StoreProvider");
+    }
+
+    return context;
+};
+
+export const StoreProvider = ({ children }: StoreProviderProps) => {
+    const [store, setStore] = useState<Store[]>([]);
+    const [collections, setCollections] = useState("");
 
     const getStore = useCallback(async () => {
-        const { data, error } = await supabase.from("store").select("*");
+        const { data, error } = await supabase
+            .from("store")
+            .select("*")
+            .order("created_at", { ascending: false });
+
         if (error) {
             console.error("Error fetching store:", error);
             setStore([]);
             return;
         }
-        setStore((data || []) as Store[]);
+
+        if (!data) {
+            setStore([]);
+            return;
+        }
+
+        // normaliza os dados para evitar undefined
+        const normalized: Store[] = data
+            .filter((item) => item && item.url)
+            .map((item) => ({
+                id: item.id,
+                value: item.value ?? undefined,
+                contact: item.contact ?? "",
+                text: item.text ?? "",
+                url: item.url ?? "",
+            }));
+
+        setStore(normalized);
     }, []);
 
-    return (
-        <StoreContext.Provider value={{
-            getStore,
+    const value = useMemo(
+        () => ({
+            store,
             collections,
             setCollections,
-            store,
-        }}>
-            {props.children}
-        </StoreContext.Provider>
-    )
+            getStore,
+        }),
+        [store, collections, getStore]
+    );
 
-}
+    return (
+        <StoreContext.Provider value={value}>
+            {children}
+        </StoreContext.Provider>
+    );
+};

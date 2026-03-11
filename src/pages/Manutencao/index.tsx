@@ -20,7 +20,7 @@ export default function Manutencao() {
       <TitlePage title="Manutenção" subtitle="Guia de manutenção básica e contato de armeiros da região" />
 
       <div className="space-y-6">
-        <TopicSection title="Guia de manutenção básica" subtitle="Divisão Urutu Airsoft" image="/safe.png">
+        <TopicSection title="Guia de manutenção básica" subtitle="Associação Santiaguense de Airsoft" image="/safe.png">
           <ul className="list-disc space-y-2 pl-5">
             <li>Óculos de proteção é equipamento obrigatório.</li>
             <li>Arma sempre travada e desmuniciada na safe zone.</li>

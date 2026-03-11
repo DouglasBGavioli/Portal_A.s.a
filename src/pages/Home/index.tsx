@@ -1,10 +1,13 @@
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useLoader, useStore } from "../../contexts";
-import { Gallery, GalleryImage, useImages } from "../../contexts";
-import { Alert } from "../../components/Alert";
 import { compareAsc, parseISO } from "date-fns";
-import { supabase } from "../../config/supabaseClient";
+
+import { Alert } from "../../components/Alert";
+
+import { useStore } from "../../contexts";
+import { Gallery, GalleryImage, useImages } from "../../contexts";
+import { useMessages } from "../../contexts";
+import { useEvents } from "../../contexts/Eventos";
 
 interface FormData {
   email: string;
@@ -26,19 +29,43 @@ const buttonClass = "inline-flex items-center justify-center rounded-md bg-brand
 
 export default function Home() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const { handleLoader } = useLoader();
+
   const { getStore, store } = useStore();
   const { getMidias, gallery } = useImages();
-  const navigate = useNavigate();
+  const { events, players } = useEvents();
 
-  const [data, setData] = useState(INITIAL_DATA);
   const [alert, setAlert] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
+
+  const { sendMessage, data, setData } = useMessages();
+  const navigate = useNavigate();
 
   useEffect(() => {
     getMidias();
     getStore();
   }, [getMidias, getStore]);
+
+  const now = new Date();
+
+  const activeEvent = events
+    ?.filter((event) => new Date(event.date) >= now)
+    ?.sort(
+      (a, b) =>
+        new Date(a.date).getTime() -
+        new Date(b.date).getTime()
+    )[0];
+
+  const daysLeft = activeEvent
+    ? Math.ceil(
+      (new Date(activeEvent.date).getTime() - now.getTime()) /
+      (1000 * 60 * 60 * 24)
+    )
+    : 0;
+
+  const remainingSlots = activeEvent
+    ? activeEvent.max_players -
+    players.filter((p) => p.event_id === activeEvent.id).length
+    : 0;
 
   const handleData = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setData({ ...data, [e.target.name]: e.target.value });
@@ -50,29 +77,20 @@ export default function Home() {
   }, [data]);
 
   const sendData = useCallback(async () => {
-    handleLoader(true);
-    try {
-      const { error } = await supabase.from("contatos").insert({ ...data });
-      if (error) {
-        throw error;
-      }
-      setData(INITIAL_DATA);
+    const success = await sendMessage();
+
+    if (success) {
       setAlert("success");
       setAlertMessage("Seu formulário foi enviado com sucesso!");
-      setTimeout(() => {
-        setAlert("");
-      }, 2000);
-    } catch (e) {
-      console.error("Error adding document: ", e);
+    } else {
       setAlert("error");
       setAlertMessage("Erro ao enviar seu formulário!");
-      setTimeout(() => {
-        setAlert("");
-      }, 2000);
-    } finally {
-      handleLoader(false);
     }
-  }, [handleLoader, data]);
+
+    setTimeout(() => {
+      setAlert("");
+    }, 2000);
+  }, [sendMessage]);
 
   const scrollToSection = () => {
     sectionRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -137,6 +155,87 @@ export default function Home() {
 
         <span className="text-center text-sm italic text-gray-600">Fortitudine et disciplina, Elite Team virtutis exemplar est.</span>
       </section>
+
+      {activeEvent && (
+        <section className="mx-auto w-full max-w-7xl px-4 pb-12 md:px-8">
+
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-brand-700">
+              Próximo evento
+            </h2>
+          </div>
+
+          <div
+            onClick={() => navigate("/eventos")}
+            className="group cursor-pointer overflow-hidden rounded-xl bg-white shadow transition hover:shadow-lg"
+          >
+
+            <div className="grid md:grid-cols-[330px_1fr]">
+
+              {/* POSTER */}
+              <div className="relative bg-black flex items-center justify-center">
+
+                <img
+                  src={activeEvent.cover_image}
+                  alt={activeEvent.name}
+                  className="h-[320px] w-full object-fit"
+                />
+
+                <div className="absolute left-3 top-3 rounded-full bg-red-600 px-3 py-1 text-xs font-bold text-white shadow uppercase">
+                  {remainingSlots === 0 ? "Lotado" : "Inscrições abertas"}
+                </div>
+
+              </div>
+
+              {/* INFOS */}
+              <div className="flex flex-col justify-between p-6">
+
+                <div className="flex flex-col gap-2">
+
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    {activeEvent.name}
+                  </h3>
+
+                  <span className="text-sm text-gray-600">
+                    📍 {activeEvent.location}
+                  </span>
+
+                  <span className="text-sm text-gray-600">
+                    📅 {activeEvent.date}
+                  </span>
+
+                  <span className="text-sm text-gray-600">
+                    💰 {formatCurrency(activeEvent.price)}
+                  </span>
+
+                </div>
+
+                <div className="mt-6 flex flex-wrap gap-4">
+
+                  <div className="rounded-lg bg-brand-50 px-4 py-3">
+                    <p className="text-xs text-gray-500">Dias restantes</p>
+                    <p className="text-lg font-bold text-brand-700">
+                      {daysLeft}
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg bg-brand-50 px-4 py-3">
+                    <p className="text-xs text-gray-500">Vagas restantes</p>
+                    <p className="text-lg font-bold text-brand-700">
+                      {remainingSlots}
+                    </p>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+      )}
 
       {((galleryOrdenada?.length || 0) > 0 || (store?.length || 0) > 0) && (
         <section className="mx-auto w-full max-w-7xl px-4 pb-12 md:px-8">
@@ -213,7 +312,7 @@ export default function Home() {
                   <div className="relative">
 
                     <img
-                      src={store[store.length - 1].url?.[0]}
+                      src={store[0].url}
                       alt="Imagem da loja"
                       className="h-[240px] w-full object-cover transition duration-500 group-hover:scale-105"
                     />
@@ -227,11 +326,11 @@ export default function Home() {
                       </span>
 
                       <h3 className="text-lg font-semibold">
-                        {store[store.length - 1].text}
+                        {store[0].text}
                       </h3>
 
                       <span className="text-sm">
-                        {formatCurrency(Number(store[store.length - 1].value))}
+                        {formatCurrency(Number(store[0].value))}
                       </span>
 
                     </div>

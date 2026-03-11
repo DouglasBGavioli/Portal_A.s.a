@@ -1,12 +1,18 @@
 type AnnouncementCardProps = {
   url: string;
   item?: string;
-  contact: number;
-  value?: string;
+  contact: string;
+  value?: number;
   onClick?: () => void;
 };
 
-export default function AnnouncementCard(props: AnnouncementCardProps) {
+export default function AnnouncementCard({
+  url,
+  item,
+  contact,
+  value,
+  onClick,
+}: AnnouncementCardProps) {
   function formatCurrency(value: number): string {
     return value.toLocaleString("pt-BR", {
       style: "currency",
@@ -15,29 +21,52 @@ export default function AnnouncementCard(props: AnnouncementCardProps) {
   }
 
   const regex = /\D/g;
+  const phone = contact.replace(regex, "");
 
   return (
-    <div className="flex h-full min-h-[365px] w-full max-w-[340px] flex-col max-[600px]:max-h-[300px] max-[600px]:max-w-[290px] max-[600px]:justify-center">
-      <span className="line-clamp-2 max-h-[50px] rounded-t bg-brand-500 px-2 py-[6px] text-base font-semibold text-white">{props.item}</span>
-      <img src={props.url} alt="Anúncio" className="h-full max-h-[250px] min-h-[250px] w-full max-w-[340px] object-cover object-center" />
-      {(props.value || props.contact) && (
-        <p className="flex h-full items-center justify-between overflow-hidden rounded-b bg-brand-500 px-2 py-1 text-base font-semibold text-white">
-          <span>
-            {formatCurrency(Number(props.value))}
-            <br />Tel: {props.contact}
-          </span>
+    <div
+      onClick={onClick}
+      className="flex w-full max-w-[340px] flex-col overflow-hidden rounded-xl bg-white shadow transition hover:shadow-lg"
+    >
+      {/* Título */}
+      {item && (
+        <span className="line-clamp-2 bg-brand-500 px-3 py-2 text-sm font-semibold text-white">
+          {item}
+        </span>
+      )}
+
+      {/* Imagem */}
+      <img
+        src={url}
+        alt={item || "Anúncio"}
+        className="h-[250px] w-full object-cover object-center"
+      />
+
+      {/* Rodapé */}
+      {(value || contact) && (
+        <div className="flex items-center justify-between bg-brand-500 px-3 py-2 text-white">
+
+          <div className="flex flex-col text-sm font-semibold leading-tight">
+            {value && <span>{formatCurrency(value)}</span>}
+            <span className="text-xs opacity-90">Tel: {contact}</span>
+          </div>
+
           <a
             aria-label="Chat on WhatsApp"
             target="_blank"
-            href={`https://wa.me//55${props.contact.toString().replace(regex, "")}?text=Olá tenho interesse no seu produto (${props.item}) anunciado no site da Divisão Urutu`}
             rel="noreferrer"
-            className="flex h-[50px] w-[50px] items-center justify-center"
+            href={`https://wa.me/55${phone}?text=Olá tenho interesse no seu produto (${item}) anunciado no site da A.S.A`}
+            className="flex h-[42px] w-[42px] items-center justify-center"
           >
-            <img alt="Chat on WhatsApp" src="whatsapp_icon.png" className="h-10 w-10 transition-all hover:h-[43px] hover:w-[43px]" />
+            <img
+              src="/whatsapp_icon.png"
+              alt="WhatsApp"
+              className="h-9 w-9 transition hover:scale-110"
+            />
           </a>
-        </p>
+
+        </div>
       )}
     </div>
   );
 }
-

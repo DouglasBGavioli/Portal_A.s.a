@@ -10,6 +10,7 @@ import Manutencao from "./pages/Manutencao";
 import Header from "./components/Header";
 import Loja from "./pages/Loja";
 import Eventos from "./pages/Eventos";
+import Evento from "./pages/Evento";
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
                         <Route path="/loja" element={<Loja />} />
                         <Route path="/manutencao" element={<Manutencao />} />
                         <Route path="/eventos" element={<Eventos />} />
+                        <Route path="/evento/:slug" element={<Evento />} />
                       </Routes>
                     </main>
 

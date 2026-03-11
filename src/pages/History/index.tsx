@@ -72,7 +72,7 @@ export default function History() {
 
       <TitlePage title="Nossa história" subtitle="Galeria de jogos" />
 
-      <p className="mb-8 max-w-2xl text-gray-600">
+      <p className="mt-10 mb-10 max-w-3xl text-base text-gray-600">
         Um pouco da nossa história registrada em jogos e eventos da equipe.
       </p>
 
