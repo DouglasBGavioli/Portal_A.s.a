@@ -52,8 +52,13 @@ export default function Home() {
     : 0;
 
   const handleData = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setData({ ...data, [e.target.name]: e.target.value });
-  }, [data]);
+    const { name, value } = e.target;
+
+    setData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }, [setData]);
 
   const dataValidation = useCallback(() => {
     const values = Object.values(data);
@@ -85,12 +90,16 @@ export default function Home() {
     return cleanedNumber.replace(/(\d{3})(\d{5})(\d{4})/, "($1) $2-$3");
   }
 
-  const handleContactChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleContactChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const formattedNumber = formatPhoneNumber(event.target.value);
-    setData({ ...data, telefone: formattedNumber });
-  };
 
-  const galleryOrdenada = [...gallery].sort((a: Gallery, b: Gallery) => {
+    setData(prev => ({
+      ...prev,
+      telefone: formattedNumber
+    }));
+  }, [setData]);
+
+  const galleryOrdenada = [...(gallery || [])].sort((a: Gallery, b: Gallery) => {
     const dataA = parseISO(a.data);
     const dataB = parseISO(b.data);
     return compareAsc(dataB, dataA);
@@ -554,10 +563,15 @@ export default function Home() {
               <input type="tel" required value={data.telefone} placeholder="(055) 99999-9999" onChange={handleContactChange} className="rounded-md border border-gray-300 px-4 py-3 outline-none focus:border-brand-500" />
               <input type="text" name="tempoPratica" value={data.tempoPratica} placeholder="A quanto tempo pratica o esporte*" onChange={handleData} className="rounded-md border border-gray-300 px-4 py-3 outline-none focus:border-brand-500" />
             </div>
-            <textarea name="mensagem" value={data.mensagem} placeholder="Deixe alguma mensagem*" onChange={(e) => setData({ ...data, mensagem: e.target.value })} className="min-h-[190px] rounded-md border border-gray-300 px-4 py-3 outline-none focus:border-brand-500" />
+            <textarea name="mensagem" value={data.mensagem} placeholder="Deixe alguma mensagem*" onChange={(e) =>
+              setData(prev => ({
+                ...prev,
+                mensagem: e.target.value
+              }))
+            } className="min-h-[190px] rounded-md border border-gray-300 px-4 py-3 outline-none focus:border-brand-500" />
           </div>
 
-          <button type="button" disabled={!dataValidation() as unknown as boolean} className={`${buttonClass} mt-5 disabled:cursor-not-allowed disabled:opacity-60`} onClick={sendData}>Enviar</button>
+          <button type="button" disabled={!dataValidation()} className={`${buttonClass} mt-5 disabled:cursor-not-allowed disabled:opacity-60`} onClick={sendData}>Enviar</button>
         </div>
       </section>
     </div>

@@ -22,10 +22,12 @@ export default function Eventos() {
   }
 
   const upcomingEvents = useMemo(() => {
+    const now = new Date();
     return events.filter((event) => new Date(event.date) >= now);
   }, [events]);
 
   const pastEvents = useMemo(() => {
+    const now = new Date();
     return events
       .filter((event) => new Date(event.date) < now)
       .sort(
