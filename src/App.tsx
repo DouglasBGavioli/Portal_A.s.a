@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react"
 import * as C from "./contexts";
 
 import Footer from "./components/Footer";
@@ -39,6 +40,7 @@ function App() {
                     </main>
 
                     <Footer />
+                    <Analytics/>
                   </div>
 
                 </C.MessageProvider>
