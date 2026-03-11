@@ -127,6 +127,11 @@ export default function Home() {
     });
   }
 
+  function formatDateBR(dateString: string) {
+  const [year, month, day] = dateString.split("-");
+  return `${day}/${month}/${year}`;
+}
+  
   return (
     <div className="w-full bg-[#f4f4f4] text-gray-800">
       <section
@@ -211,7 +216,7 @@ export default function Home() {
 
                   <span className="flex items-center gap-2 text-sm text-gray-600">
                     <CalendarDaysIcon className="h-4 w-4 text-blue-500" />
-                    {new Date(activeEvent.date).toLocaleDateString("pt-BR")}
+                    {formatDateBR(activeEvent.date)}
                   </span>
 
                   <span className="flex items-center gap-2 text-sm text-gray-600">
@@ -295,7 +300,7 @@ export default function Home() {
                       </h3>
 
                       <span className="text-sm opacity-80">
-                        {galleryOrdenada[0].data}
+                        {formatDateBR(galleryOrdenada[0].data)}
                       </span>
 
                       <span className="mt-1 text-xs opacity-70">

@@ -38,8 +38,9 @@ export default function Evento() {
         return events.find((e) => e.slug === slug);
     }, [events, slug]);
 
-    function formatDate(dateString: string) {
-        return new Date(dateString).toLocaleDateString("pt-BR");
+    function formatDateBR(dateString: string) {
+        const [year, month, day] = dateString.split("-");
+        return `${day}/${month}/${year}`;
     }
 
     /* CARREGAR EVENTO */
@@ -166,7 +167,7 @@ export default function Evento() {
 
                         <div className="flex items-center gap-3">
                             <CalendarDaysIcon className="h-5 w-5 text-blue-500" />
-                            {formatDate(event.date)}
+                            {formatDateBR(event.date)}
                         </div>
 
                         <div className="flex items-center gap-3">

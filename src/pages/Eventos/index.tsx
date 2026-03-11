@@ -15,8 +15,9 @@ export default function Eventos() {
   const { events, players } = useEvents();
   const navigate = useNavigate();
 
-  function formatDate(dateString: string) {
-    return new Date(dateString).toLocaleDateString("pt-BR");
+  function formatDateBR(dateString: string) {
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
   }
 
   const upcomingEvents = useMemo(() => {
@@ -95,7 +96,7 @@ export default function Eventos() {
 
             <span className="flex items-center gap-2 text-sm text-gray-600">
               <CalendarDaysIcon className="h-4 w-4 text-blue-500" />
-              {formatDate(event.date)}
+              {formatDateBR(event.date)}
             </span>
 
             <span className="flex items-center gap-2 text-sm text-gray-600">
