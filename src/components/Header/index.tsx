@@ -1,159 +1,178 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Bars3Icon,
+  XMarkIcon,
+  CalendarDaysIcon,
+} from "@heroicons/react/24/outline";
+
+import { useEvents } from "../../contexts/Eventos";
+
+const links = [
+  { name: "Home", path: "/" },
+  { name: "Eventos", path: "/eventos" },
+  { name: "Galerias", path: "/galery" },
+  { name: "Integrantes", path: "/integrantes" },
+  { name: "Loja", path: "/loja" },
+];
 
 export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+
   const location = useLocation();
   const navigate = useNavigate();
 
+  const { events } = useEvents();
+
   useEffect(() => {
-    setIsMenuOpen(false);
+    setOpen(false);
   }, [location]);
 
+  const isActive = (path: string) => location.pathname === path;
+
+  /* EVENTO MAIS PRÓXIMO */
+
+  const nextEvent = useMemo(() => {
+    if (!events || events.length === 0) return null;
+
+    const now = new Date();
+
+    const upcoming = events
+      .filter((event) => new Date(event.date) >= now)
+      .sort(
+        (a, b) =>
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+
+    return upcoming[0] || null;
+  }, [events]);
+
+  const goToNextEvent = () => {
+    if (!nextEvent) {
+      navigate("/eventos");
+      return;
+    }
+
+    navigate(`/evento/${nextEvent.slug}`);
+  };
+
   return (
-    <header
-      className={`w-full bg-brand-900 transition-all duration-300 ${
-        isMenuOpen ? "min-h-screen" : "h-[80px]"
-      }`}
-    >
-      <div className="mx-auto flex w-full max-w-[1920px] flex-row-reverse items-center justify-between sm:flex-row">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-brand-900/95 backdrop-blur-md">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
 
-        {/* LOGO (ESCONDIDO NO MOBILE <640px) */}
-        <div
-          className="hidden cursor-pointer items-center gap-3 px-6 py-4 sm:flex sm:pl-10"
-          onClick={() => navigate("/")}
-        >
-          <img
-            src="/logo.png"
-            alt="Logo asa"
-            className="bg-black rounded-full h-[50px] w-[50px] object-cover"
-          />
-        </div>
+        {/* TOP BAR */}
+        <div className="grid h-[70px] grid-cols-[auto_1fr_auto] items-center gap-3">
 
-        {/* MENU DESKTOP (>=640px) */}
-        <div className="hidden pr-10 sm:flex">
-          <nav className="flex items-center">
-            <ul className="flex list-none gap-10">
-
-              <li>
-                <Link
-                  className="uppercase text-white transition-colors hover:text-brand-400"
-                  to="/"
-                >
-                  Home
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  className="uppercase text-white transition-colors hover:text-brand-400"
-                  to="/eventos"
-                >
-                  Eventos
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  className="uppercase text-white transition-colors hover:text-brand-400"
-                  to="/galery"
-                >
-                  Galerias
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  className="uppercase text-white transition-colors hover:text-brand-400"
-                  to="/integrantes"
-                >
-                  Integrantes
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  className="uppercase text-white transition-colors hover:text-brand-400"
-                  to="/loja"
-                >
-                  Loja
-                </Link>
-              </li>
-
-            </ul>
-          </nav>
-        </div>
-
-        {/* MENU MOBILE (<640px) */}
-        <div className="flex flex-col items-end sm:hidden">
-
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="flex items-center justify-center p-6"
+          {/* LOGO */}
+          <div
+            onClick={() => navigate("/")}
+            className="flex min-w-0 cursor-pointer items-center gap-2"
           >
             <img
-              src="/menu.svg"
-              alt="Menu"
-              className="h-7 w-7 object-contain"
+              src="/logo.png"
+              alt="ASA"
+              className="h-10 w-10 flex-shrink-0 rounded-full object-cover"
             />
-          </button>
 
-          <nav
-            className={`${
-              isMenuOpen ? "opacity-100" : "pointer-events-none opacity-0"
-            } w-full px-6 pb-8 transition-all duration-300`}
-          >
-            <ul className="flex list-none flex-col gap-6">
+            <div className="hidden min-w-0 flex-col sm:flex">
+              <span className="truncate text-sm font-semibold text-white">
+                Associação
+              </span>
 
-              <li>
-                <Link
-                  className="uppercase text-white transition-colors hover:text-brand-400"
-                  to="/"
-                >
-                  Home
-                </Link>
-              </li>
+              <span className="truncate text-xs tracking-widest text-brand-400">
+                SANTIAGUENSE AIRSOFT
+              </span>
+            </div>
+          </div>
 
-              <li>
-                <Link
-                  className="uppercase text-white transition-colors hover:text-brand-400"
-                  to="/eventos"
-                >
-                  Eventos
-                </Link>
-              </li>
+          {/* DESKTOP MENU */}
+          <nav className="hidden justify-center sm:flex">
+            <ul className="flex items-center gap-8">
 
-              <li>
-                <Link
-                  className="uppercase text-white transition-colors hover:text-brand-400"
-                  to="/galery"
-                >
-                  Galerias
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  className="uppercase text-white transition-colors hover:text-brand-400"
-                  to="/integrantes"
-                >
-                  Integrantes
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  className="uppercase text-white transition-colors hover:text-brand-400"
-                  to="/loja"
-                >
-                  Loja
-                </Link>
-              </li>
+              {links.map((link) => (
+                <li key={link.path}>
+                  <Link
+                    to={link.path}
+                    className={`text-sm font-medium uppercase transition
+                    ${
+                      isActive(link.path)
+                        ? "text-brand-400"
+                        : "text-white/80 hover:text-white"
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
 
             </ul>
           </nav>
 
+          {/* ACTION AREA */}
+          <div className="flex items-center justify-end gap-2">
+
+            {/* CTA DESKTOP */}
+            <button
+              onClick={goToNextEvent}
+              className="hidden items-center gap-2 rounded-md bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-400 sm:flex"
+            >
+              <CalendarDaysIcon className="h-5 w-5" />
+              Próximo Evento
+            </button>
+
+            {/* MOBILE BUTTON */}
+            <button
+              onClick={() => setOpen(!open)}
+              className="flex items-center justify-center text-white sm:hidden"
+            >
+              {open ? (
+                <XMarkIcon className="h-7 w-7" />
+              ) : (
+                <Bars3Icon className="h-7 w-7" />
+              )}
+            </button>
+
+          </div>
         </div>
+      </div>
+
+      {/* MOBILE MENU */}
+      <div
+        className={`overflow-hidden transition-all duration-300 sm:hidden ${
+          open ? "max-h-[420px]" : "max-h-0"
+        }`}
+      >
+        <nav className="border-t border-white/10 bg-brand-900 px-6 py-6">
+          <ul className="flex flex-col gap-5">
+
+            {links.map((link) => (
+              <li key={link.path} className="w-full">
+                <Link
+                  to={link.path}
+                  className={`block w-full rounded-md px-2 py-2 text-lg uppercase transition
+                  ${
+                    isActive(link.path)
+                      ? "bg-brand-500/20 text-brand-400"
+                      : "text-white/80 hover:bg-white/5 hover:text-white"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              </li>
+            ))}
+
+          </ul>
+
+          {/* CTA MOBILE */}
+          <button
+            onClick={goToNextEvent}
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-md bg-brand-500 py-3 font-semibold text-white transition hover:bg-brand-400"
+          >
+            <CalendarDaysIcon className="h-5 w-5" />
+            Próximo Evento
+          </button>
+
+        </nav>
       </div>
     </header>
   );
