@@ -183,7 +183,7 @@ export default function Home() {
             className="group cursor-pointer overflow-hidden rounded-xl bg-white shadow transition hover:shadow-lg"
           >
 
-            <div className="grid md:grid-cols-[330px_1fr]">
+            <div className="grid md:grid-cols-[450px_1fr]">
 
               {/* POSTER */}
               <div className="relative bg-black flex items-center justify-center">

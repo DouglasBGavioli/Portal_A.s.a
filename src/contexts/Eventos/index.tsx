@@ -48,12 +48,10 @@ type EventsContextType = {
   selectedEvent: Event | null;
   teams: Team[];
   players: Player[];
-  totalPlayers: number;
-  remainingSlots: number;
+
   loading: boolean;
 
-  loadEvents: () => Promise<void>;
-  selectEvent: (slug: string) => Promise<void>;
+  selectEvent: (slug: string) => void;
 
   registerPlayer: (
     teamId: string,
@@ -67,108 +65,84 @@ const EventsContext = createContext({} as EventsContextType);
 export const useEvents = () => useContext(EventsContext);
 
 export function EventsProvider({ children }: { children: ReactNode }) {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
+  const [events, setEvents] = useState<Event[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
 
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+
   const [loading, setLoading] = useState(false);
 
-  const totalPlayers = players.length;
-
-  const remainingSlots =
-    selectedEvent?.max_players !== undefined
-      ? selectedEvent.max_players - totalPlayers
-      : 0;
-
   /*
-  CARREGAR EVENTOS
+  CARREGAR TODOS OS DADOS
   */
 
-  const loadEvents = useCallback(async () => {
+  const loadData = useCallback(async () => {
+
     setLoading(true);
 
     try {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .order("date", { ascending: true });
 
-      if (error) {
-        console.error(error);
-        return;
-      }
+      const [eventsRes, teamsRes, playersRes] = await Promise.all([
 
-      setEvents(data || []);
+        supabase
+          .from("events")
+          .select("*")
+          .order("date", { ascending: true }),
+
+        supabase
+          .from("teams")
+          .select("*"),
+
+        supabase
+          .from("players")
+          .select("*")
+
+      ]);
+
+      if (eventsRes.error) console.error(eventsRes.error);
+      if (teamsRes.error) console.error(teamsRes.error);
+      if (playersRes.error) console.error(playersRes.error);
+
+      setEvents(eventsRes.data || []);
+      setTeams(teamsRes.data || []);
+      setPlayers(playersRes.data || []);
+
     } catch (err) {
+
       console.error(err);
+
     } finally {
+
       setLoading(false);
+
     }
+
   }, []);
 
   /*
   SELECIONAR EVENTO
   */
 
-  const selectEvent = useCallback(async (slug: string) => {
-    if (!slug) {
-      return;
-    }
+  const selectEvent = useCallback((slug: string) => {
 
-    const event = events.find((item) => item.slug === slug);
+    const event = events.find((e) => e.slug === slug) || null;
 
-    if (!event) {
-      setSelectedEvent(null);
-      setTeams([]);
-      setPlayers([]);
-      return;
-    }
+    setSelectedEvent(event);
 
-    if (selectedEvent?.id === event.id && teams.length > 0) {
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      setSelectedEvent(event);
-
-      const [teamsRes, playersRes] = await Promise.all([
-        supabase
-          .from("teams")
-          .select("*")
-          .eq("event_id", event.id)
-          .order("name"),
-
-        supabase
-          .from("players")
-          .select("*")
-          .eq("event_id", event.id)
-          .order("created_at"),
-      ]);
-
-      if (teamsRes.error) console.error(teamsRes.error);
-      if (playersRes.error) console.error(playersRes.error);
-
-      setTeams(teamsRes.data || []);
-      setPlayers(playersRes.data || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, [events, selectedEvent?.id, teams.length]);
+  }, [events]);
 
   /*
-  REGISTRAR JOGADOR
+  REGISTRAR PLAYER
   */
 
   const registerPlayer = useCallback(async (
+
     teamId: string,
     name: string,
     airsoftTeam?: string
+
   ): Promise<RegisterResult> => {
 
     if (!selectedEvent) {
@@ -182,61 +156,23 @@ export function EventsProvider({ children }: { children: ReactNode }) {
       const normalizedName = name.trim().toLowerCase();
       const normalizedTeam = (airsoftTeam || "").trim().toLowerCase();
 
-      /*
-      Buscar jogadores já inscritos no evento
-      */
+      const existingPlayers = players.filter(
+        (p) => p.event_id === selectedEvent.id
+      );
 
-      const { data: existingPlayers, error: fetchError } = await supabase
-        .from("players")
-        .select("*")
-        .eq("event_id", selectedEvent.id);
-
-      if (fetchError) {
-        console.error(fetchError);
-        return { error: "UNKNOWN_ERROR" };
-      }
-
-      /*
-      Jogador já inscrito neste time
-      */
-
-      const alreadyInSameTeam = existingPlayers?.find(
+      const alreadyRegistered = existingPlayers.find(
         (p) =>
-          p.team_id === teamId &&
           p.name.toLowerCase() === normalizedName &&
           (p.airsoft_team || "").toLowerCase() === normalizedTeam
       );
 
-      if (alreadyInSameTeam) {
+      if (alreadyRegistered) {
         return { error: "PLAYER_ALREADY_REGISTERED" };
       }
 
-      /*
-      Jogador já inscrito em outro time
-      */
-
-      const alreadyInOtherTeam = existingPlayers?.find(
-        (p) =>
-          p.team_id !== teamId &&
-          p.name.toLowerCase() === normalizedName &&
-          (p.airsoft_team || "").toLowerCase() === normalizedTeam
-      );
-
-      if (alreadyInOtherTeam) {
-        return { error: "PLAYER_IN_OTHER_TEAM" };
-      }
-
-      /*
-      Verificar vagas do evento
-      */
-
-      if (existingPlayers && existingPlayers.length >= selectedEvent.max_players) {
+      if (existingPlayers.length >= selectedEvent.max_players) {
         return { error: "EVENT_FULL" };
       }
-
-      /*
-      Inserir jogador
-      */
 
       const { data, error } = await supabase
         .from("players")
@@ -264,36 +200,42 @@ export function EventsProvider({ children }: { children: ReactNode }) {
       return { error: "UNKNOWN_ERROR" };
 
     } finally {
+
       setLoading(false);
+
     }
-  }, [selectedEvent]);
+
+  }, [players, selectedEvent]);
+
+  /*
+  CARREGAR AO INICIAR
+  */
 
   useEffect(() => {
-    loadEvents();
-  }, [loadEvents]);
+    loadData();
+  }, [loadData]);
 
   const value = useMemo(() => ({
+
     events,
-    selectedEvent,
     teams,
     players,
-    totalPlayers,
-    remainingSlots,
+    selectedEvent,
     loading,
-    loadEvents,
+
     selectEvent,
     registerPlayer,
+
   }), [
+
     events,
-    selectedEvent,
     teams,
     players,
-    totalPlayers,
-    remainingSlots,
+    selectedEvent,
     loading,
-    loadEvents,
     selectEvent,
     registerPlayer,
+
   ]);
 
   return (
