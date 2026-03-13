@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 import { useEvents } from "../../contexts/Eventos";
+import { getNextEvent } from "../../utils/eventHelpers";
 
 const links = [
   { name: "Home", path: "/" },
@@ -33,18 +34,7 @@ export default function Header() {
   /* EVENTO MAIS PRÓXIMO */
 
   const nextEvent = useMemo(() => {
-    if (!events || events.length === 0) return null;
-
-    const now = new Date();
-
-    const upcoming = events
-      .filter((event) => new Date(event.date) >= now)
-      .sort(
-        (a, b) =>
-          new Date(a.date).getTime() - new Date(b.date).getTime()
-      );
-
-    return upcoming[0] || null;
+    return getNextEvent(events);
   }, [events]);
 
   const goToNextEvent = () => {
@@ -80,7 +70,7 @@ export default function Header() {
               </span>
 
               <span className="truncate text-xs tracking-widest text-brand-400">
-                SANTIAGUENSE AIRSOFT
+                SANTIAGUENSE DE AIRSOFT
               </span>
             </div>
           </div>

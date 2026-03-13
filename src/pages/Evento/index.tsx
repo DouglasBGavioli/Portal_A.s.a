@@ -1,10 +1,12 @@
 import { useParams } from "react-router-dom";
 import { useMemo, useState, useEffect, useCallback } from "react";
+import { Helmet } from "react-helmet-async";
 
 import { TitlePage } from "../../components/TitlePage";
 import Button from "../../components/Button";
 
 import { useEvents, Team, Player } from "../../contexts/Eventos";
+import { isPastEvent } from "../../utils/eventHelpers";
 
 import {
     CalendarDaysIcon,
@@ -56,6 +58,11 @@ export default function Evento() {
         if (!event) return [];
         return teams.filter((team) => team.event_id === event.id);
     }, [teams, event]);
+
+    const hasEventEnded = useMemo(() => {
+        if (!event) return false;
+        return isPastEvent(event);
+    }, [event]);
 
     /* PLAYERS POR TIME */
 
@@ -138,9 +145,93 @@ export default function Evento() {
         setFormMode(false);
     }
 
-    return (
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-10 md:px-8">
+    function formatCurrency(value: number): string {
+        return value.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+        });
+    }
 
+    return (
+
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-10 md:px-8">
+            <Helmet>
+
+                <title>{event.name} - {formatDateBR(event.date)} | A.S.A</title>
+
+                {/* SEO */}
+
+                <meta
+                    name="description"
+                    content={
+                        event.description ||
+                        "Evento da Associação Santiaguense de Airsoft"
+                    }
+                />
+
+                {/* OpenGraph */}
+
+                <meta property="og:type" content="website" />
+
+                <meta
+                    property="og:title"
+                    content={event.name}
+                />
+
+                <meta
+                    property="og:description"
+                    content={
+                        event.description ||
+                        "Confira os detalhes deste evento da A.S.A"
+                    }
+                />
+
+                <meta
+                    property="og:image"
+                    content={event.cover_image}
+                />
+
+                <meta
+                    property="og:url"
+                    content={window.location.href}
+                />
+
+                <meta
+                    property="og:site_name"
+                    content="A.S.A"
+                />
+
+                <meta
+                    property="og:locale"
+                    content="pt_BR"
+                />
+
+                {/* Twitter / WhatsApp preview */}
+
+                <meta
+                    name="twitter:card"
+                    content="summary_large_image"
+                />
+
+                <meta
+                    name="twitter:title"
+                    content={event.name}
+                />
+
+                <meta
+                    name="twitter:description"
+                    content={
+                        event.description ||
+                        "Evento da Associação Santiaguense de Airsoft"
+                    }
+                />
+
+                <meta
+                    name="twitter:image"
+                    content={event.cover_image}
+                />
+
+            </Helmet>
             <TitlePage title={event.name} subtitle="Detalhes do evento" />
 
             {/* HEADER */}
@@ -158,29 +249,44 @@ export default function Evento() {
                 <div className="flex flex-col gap-6">
 
                     {event.description && (
-                        <p className="text-gray-700 leading-relaxed">
+
+                        <p className="text-sm leading-relaxed text-gray-700 md:text-base">
                             {event.description}
                         </p>
+
                     )}
 
-                    <div className="flex flex-col gap-3 rounded-xl border bg-gray-50 p-5 text-sm text-gray-700">
+                    <div className="flex flex-col gap-2 md:flex-row">
 
-                        <div className="flex items-center gap-3">
-                            <CalendarDaysIcon className="h-5 w-5 text-blue-500" />
-                            {formatDateBR(event.date)}
+                        <div className="flex flex-col w-full max-w-md gap-3 rounded-xl border bg-gray-50 p-5 text-sm text-gray-700">
+
+                            <div className="flex items-center gap-3">
+                                <CalendarDaysIcon className="h-5 w-5 text-blue-500" />
+                                {formatDateBR(event.date)}
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <MapPinIcon className="h-5 w-5 text-red-500" />
+                                {event.location}
+                            </div>
+
+                            <div className="flex items-center gap-3 font-medium text-gray-800">
+                                <BanknotesIcon className="h-5 w-5 text-green-500" />
+                                {event.price ? formatCurrency(event.price) : "Gratuito"}
+                            </div>
                         </div>
+                        <div className="overflow-hidden rounded-lg border">
 
-                        <div className="flex items-center gap-3">
-                            <MapPinIcon className="h-5 w-5 text-red-500" />
-                            {event.location}
+                            <iframe
+                                title="Mapa do evento"
+                                src={`https://maps.google.com/maps?q=${encodeURIComponent(event.location)}&z=14&output=embed`}
+                                className="h-[250px] w-full border-0"
+                                loading="lazy"
+                            />
+
                         </div>
-
-                        <div className="flex items-center gap-3 font-medium text-gray-800">
-                            <BanknotesIcon className="h-5 w-5 text-green-500" />
-                            R$ {event.price}
-                        </div>
-
                     </div>
+
 
                     <div className="mt-auto flex gap-2">
 
@@ -296,7 +402,13 @@ export default function Evento() {
 
             {/* BOTÃO INSCRIÇÃO */}
 
-            {!formMode && eventTeams.length > 0 && (
+            {hasEventEnded && (
+                <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+                    Este evento ja foi encerrado. As inscricoes nao estao mais disponiveis.
+                </div>
+            )}
+
+            {!formMode && eventTeams.length > 0 && !hasEventEnded && (
 
                 <Button
                     variant="primary"
@@ -311,7 +423,7 @@ export default function Evento() {
 
             {/* FORM */}
 
-            {formMode && (
+            {formMode && !hasEventEnded && (
 
                 <div className="flex flex-col gap-6 rounded-xl border bg-white p-6 shadow-sm">
 

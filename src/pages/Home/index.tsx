@@ -4,10 +4,13 @@ import { compareAsc, parseISO } from "date-fns";
 
 import { Alert } from "../../components/Alert";
 
+import { getNextEvent, parseEventDate } from "../../utils/eventHelpers";
+
 import { useStore } from "../../contexts";
 import { Gallery, GalleryImage, useImages } from "../../contexts";
 import { useMessages } from "../../contexts";
 import { useEvents } from "../../contexts/Eventos";
+
 import { BanknotesIcon, CalendarDaysIcon, MapPinIcon } from "@heroicons/react/24/outline";
 
 const buttonClass = "inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-brand-600";
@@ -31,15 +34,7 @@ export default function Home() {
   }, [getMidias, getStore]);
 
   const activeEvent = useMemo(() => {
-    const now = new Date();
-
-    return events
-      ?.filter((event) => new Date(event.date) >= now)
-      ?.sort(
-        (a, b) =>
-          new Date(a.date).getTime() -
-          new Date(b.date).getTime()
-      )[0];
+    return getNextEvent(events);
   }, [events]);
 
   const daysLeft = useMemo(() => {
@@ -50,7 +45,7 @@ export default function Home() {
     const now = new Date();
 
     return Math.ceil(
-      (new Date(activeEvent.date).getTime() - now.getTime()) /
+      (parseEventDate(activeEvent.date).getTime() - now.getTime()) /
       (1000 * 60 * 60 * 24)
     );
   }, [activeEvent]);
@@ -128,10 +123,10 @@ export default function Home() {
   }
 
   function formatDateBR(dateString: string) {
-  const [year, month, day] = dateString.split("-");
-  return `${day}/${month}/${year}`;
-}
-  
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
+  }
+
   return (
     <div className="w-full bg-[#f4f4f4] text-gray-800">
       <section
@@ -179,7 +174,7 @@ export default function Home() {
           </div>
 
           <div
-            onClick={() => navigate("/eventos")}
+            onClick={() => navigate(`/evento/${activeEvent.slug}`)}
             className="group cursor-pointer overflow-hidden rounded-xl bg-white shadow transition hover:shadow-lg"
           >
 
@@ -200,46 +195,67 @@ export default function Home() {
 
               </div>
 
-              {/* INFOS */}
-              <div className="flex flex-col justify-between p-6">
+              {/* INFO + MAPA */}
+              <div className="grid md:grid-cols-[1fr_400px] gap-6 p-6">
 
-                <div className="flex flex-col gap-2">
+                {/* INFOS */}
+                <div className="flex flex-col justify-between">
 
-                  <h3 className="text-2xl font-bold text-gray-800">
-                    {activeEvent.name}
-                  </h3>
+                  <div className="flex flex-col gap-2">
 
-                  <span className="flex items-center gap-2 text-sm text-gray-600">
-                    <MapPinIcon className="h-4 w-4 text-red-500" />
-                    {activeEvent.location}
-                  </span>
+                    <h3 className="text-2xl font-bold text-gray-800">
+                      {activeEvent.name}
+                    </h3>
 
-                  <span className="flex items-center gap-2 text-sm text-gray-600">
-                    <CalendarDaysIcon className="h-4 w-4 text-blue-500" />
-                    {formatDateBR(activeEvent.date)}
-                  </span>
+                    <span className="flex items-center gap-2 text-sm text-gray-600">
+                      <MapPinIcon className="h-4 w-4 text-red-500" />
+                      {activeEvent.location}
+                    </span>
 
-                  <span className="flex items-center gap-2 text-sm text-gray-600">
-                    <BanknotesIcon className="h-4 w-4 text-green-500" />
-                    {formatCurrency(activeEvent.price)}
-                  </span>
+                    <span className="flex items-center gap-2 text-sm text-gray-600">
+                      <CalendarDaysIcon className="h-4 w-4 text-blue-500" />
+                      {formatDateBR(activeEvent.date)}
+                    </span>
+
+                    <span className="flex items-center gap-2 text-sm text-gray-600">
+                      <BanknotesIcon className="h-4 w-4 text-green-500" />
+                      {activeEvent.price ? formatCurrency(activeEvent.price) : "Gratuito"}
+                    </span>
+
+                  </div>
+
+                  <div className="mt-6 flex gap-4">
+
+                    <div className="rounded-lg bg-brand-50 px-4 py-3">
+                      <p className="text-xs text-gray-500">Dias restantes</p>
+                      <p className="text-lg font-bold text-brand-700">
+                        {daysLeft}
+                      </p>
+                    </div>
+
+                    <div className="rounded-lg bg-brand-50 px-4 py-3">
+                      <p className="text-xs text-gray-500">Vagas restantes</p>
+                      <p className="text-lg font-bold text-brand-700">
+                        {remainingSlots}
+                      </p>
+                    </div>
+
+                  </div>
 
                 </div>
 
-                <div className="mt-6 flex flex-wrap gap-4">
+                {/* MAPA */}
+                <div className="flex flex-col gap-3">
 
-                  <div className="rounded-lg bg-brand-50 px-4 py-3">
-                    <p className="text-xs text-gray-500">Dias restantes</p>
-                    <p className="text-lg font-bold text-brand-700">
-                      {daysLeft}
-                    </p>
-                  </div>
+                  <div className="overflow-hidden rounded-lg border">
 
-                  <div className="rounded-lg bg-brand-50 px-4 py-3">
-                    <p className="text-xs text-gray-500">Vagas restantes</p>
-                    <p className="text-lg font-bold text-brand-700">
-                      {remainingSlots}
-                    </p>
+                    <iframe
+                      title="Mapa do evento"
+                      src={`https://maps.google.com/maps?q=${encodeURIComponent(activeEvent.location)}&z=14&output=embed`}
+                      className="h-[260px] w-full border-0"
+                      loading="lazy"
+                    />
+
                   </div>
 
                 </div>

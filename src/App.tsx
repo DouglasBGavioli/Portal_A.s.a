@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
+import { HelmetProvider } from "react-helmet-async";
 import * as C from "./contexts";
 
 import Footer from "./components/Footer";
@@ -19,17 +20,21 @@ import Evento from "./pages/Evento";
 
 function AppProviders({ children }: { children: React.ReactNode }) {
   return (
-    <C.MembersProvider>
-      <C.StoreProvider>
-        <C.MidiasProvider>
-          <C.LoaderProvider>
-            <C.EventsProvider>
-              <C.MessageProvider>{children}</C.MessageProvider>
-            </C.EventsProvider>
-          </C.LoaderProvider>
-        </C.MidiasProvider>
-      </C.StoreProvider>
-    </C.MembersProvider>
+    <HelmetProvider>
+      <C.MembersProvider>
+        <C.StoreProvider>
+          <C.MidiasProvider>
+            <C.LoaderProvider>
+              <C.EventsProvider>
+                <C.MessageProvider>
+                  {children}
+                </C.MessageProvider>
+              </C.EventsProvider>
+            </C.LoaderProvider>
+          </C.MidiasProvider>
+        </C.StoreProvider>
+      </C.MembersProvider>
+    </HelmetProvider>
   );
 }
 

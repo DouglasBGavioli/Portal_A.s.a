@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { TitlePage } from "../../components/TitlePage";
 
 import { useEvents, Player, Event } from "../../contexts/Eventos";
+import { getPastEvents, getUpcomingEvents } from "../../utils/eventHelpers";
 
 import {
   CalendarDaysIcon,
@@ -21,19 +22,11 @@ export default function Eventos() {
   }
 
   const upcomingEvents = useMemo(() => {
-    const now = new Date();
-    return events.filter((event) => new Date(event.date) >= now);
+    return getUpcomingEvents(events);
   }, [events]);
 
   const pastEvents = useMemo(() => {
-    const now = new Date();
-    return events
-      .filter((event) => new Date(event.date) < now)
-      .sort(
-        (a, b) =>
-          new Date(b.date).getTime() - new Date(a.date).getTime()
-      )
-      .slice(0, 6);
+    return getPastEvents(events).slice(0, 6);
   }, [events]);
 
   const playersByEvent = useMemo<Record<string, Player[]>>(() => {
@@ -43,6 +36,13 @@ export default function Eventos() {
       return acc;
     }, {} as Record<string, Player[]>);
   }, [players]);
+
+  function formatCurrency(value: number): string {
+    return value.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+  }
 
   function renderEventCard(event: Event, isPast = false) {
 
@@ -106,7 +106,7 @@ export default function Eventos() {
 
             <span className="flex items-center gap-2 text-sm text-gray-600">
               <BanknotesIcon className="h-4 w-4 text-green-500" />
-              R$ {event.price}
+              {event.price ? formatCurrency(event.price) : "Gratuito"}
             </span>
 
             {!isPast && event.max_players > 0 && (
