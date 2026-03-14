@@ -7,12 +7,17 @@ import Button from "../../components/Button";
 
 import { useEvents, Team, Player } from "../../contexts/Eventos";
 import { isPastEvent } from "../../utils/eventHelpers";
+import { formatDateBR } from "../../utils/formatDateBR";
+import { formatCurrency } from "../../utils/formatCurrency";
+import { formatTime } from "../../utils/formatTime";
 
 import {
     CalendarDaysIcon,
     MapPinIcon,
     BanknotesIcon,
     ShareIcon,
+    ClockIcon,
+    HeartIcon,
 } from "@heroicons/react/24/outline";
 
 export default function Evento() {
@@ -39,11 +44,6 @@ export default function Evento() {
         if (!slug) return undefined;
         return events.find((e) => e.slug === slug);
     }, [events, slug]);
-
-    function formatDateBR(dateString: string) {
-        const [year, month, day] = dateString.split("-");
-        return `${day}/${month}/${year}`;
-    }
 
     /* CARREGAR EVENTO */
 
@@ -143,13 +143,6 @@ export default function Evento() {
         setTeamName("");
         setTeamId("");
         setFormMode(false);
-    }
-
-    function formatCurrency(value: number): string {
-        return value.toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-        });
     }
 
     return (
@@ -258,34 +251,78 @@ export default function Evento() {
 
                     <div className="flex flex-col gap-2 md:flex-row">
 
-                        <div className="flex flex-col w-full max-w-md gap-3 rounded-xl border bg-gray-50 p-5 text-sm text-gray-700">
+                        <div className="flex flex-col w-full max-w-md gap-4 rounded-xl border bg-gray-50 p-5 text-sm text-gray-700">
 
-                            <div className="flex items-center gap-3">
-                                <CalendarDaysIcon className="h-5 w-5 text-blue-500" />
-                                {formatDateBR(event.date)}
+                            <div className="flex items-start gap-3">
+                                <MapPinIcon className="h-5 w-5 shrink-0 text-red-500 mt-0.5" />
+                                <span className="break-words">{event.location}</span>
                             </div>
 
-                            <div className="flex items-center gap-3">
-                                <MapPinIcon className="h-5 w-5 text-red-500" />
-                                {event.location}
+                            <div className="flex items-start gap-3 font-medium text-gray-800">
+                                <BanknotesIcon className="h-5 w-5 shrink-0 text-green-500 mt-0.5" />
+                                <span>{event.price ? formatCurrency(event.price) : "Gratuito"}</span>
                             </div>
 
-                            <div className="flex items-center gap-3 font-medium text-gray-800">
-                                <BanknotesIcon className="h-5 w-5 text-green-500" />
-                                {event.price ? formatCurrency(event.price) : "Gratuito"}
+                            <div className="flex items-start gap-3">
+                                <CalendarDaysIcon className="h-5 w-5 shrink-0 text-blue-500 mt-0.5" />
+                                <span>{formatDateBR(event.date)}</span>
                             </div>
+
+                            <div className="flex items-start gap-3 font-medium text-gray-800">
+                                <HeartIcon className="h-5 w-5 shrink-0 text-red-500 mt-0.5" />
+                                <span>{event.bandages}</span>
+                            </div>
+
+                            <div className="flex flex-col gap-4">
+
+                                <div className="flex items-start gap-2 text-gray-700">
+                                    <ClockIcon className="h-5 w-5 shrink-0 mt-0.5 text-gray-500" />
+                                    <span className="font-semibold">Cronograma</span>
+                                </div>
+
+                                <div className="flex flex-col gap-3 pl-2 border-l-2 border-gray-200">
+
+                                    <div className="flex items-center justify-between pl-3 relative">
+                                        <span className="absolute -left-[7px] h-3 w-3 rounded-full bg-blue-500"></span>
+                                        <span className="text-gray-600">Abertura</span>
+                                        <span className="font-semibold">{formatTime(event.opening_time)}</span>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pl-3 relative">
+                                        <span className="absolute -left-[7px] h-3 w-3 rounded-full bg-yellow-500"></span>
+                                        <span className="text-gray-600">Briefing</span>
+                                        <span className="font-semibold">{formatTime(event.briefing_time)}</span>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pl-3 relative">
+                                        <span className="absolute -left-[7px] h-3 w-3 rounded-full bg-green-500"></span>
+                                        <span className="text-gray-600">Início do jogo</span>
+                                        <span className="font-semibold">{formatTime(event.game_start_time)}</span>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pl-3 relative">
+                                        <span className="absolute -left-[7px] h-3 w-3 rounded-full bg-red-500"></span>
+                                        <span className="text-gray-600">Fim</span>
+                                        <span className="font-semibold">{formatTime(event.end_time)}</span>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
                         </div>
-                        <div className="overflow-hidden rounded-lg border">
 
+                        <div className="overflow-hidden rounded-lg border w-full">
                             <iframe
                                 title="Mapa do evento"
                                 src={`https://maps.google.com/maps?q=${encodeURIComponent(event.location)}&z=14&output=embed`}
                                 className="h-[250px] w-full border-0"
                                 loading="lazy"
                             />
-
                         </div>
+
                     </div>
+
 
 
                     <div className="mt-auto flex gap-2">

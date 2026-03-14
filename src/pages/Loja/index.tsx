@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useStore } from "../../contexts";
 import { TitlePage } from "../../components/TitlePage";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 export default function Loja() {
   const {
@@ -22,14 +23,6 @@ export default function Loja() {
   useEffect(() => {
     getStore();
   }, [getStore]);
-
-  function formatCurrency(value?: number) {
-    if (!value) return "";
-    return value.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-  }
 
   const regex = /\D/g;
 

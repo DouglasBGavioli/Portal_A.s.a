@@ -4,22 +4,19 @@ import { TitlePage } from "../../components/TitlePage";
 
 import { useEvents, Player, Event } from "../../contexts/Eventos";
 import { getPastEvents, getUpcomingEvents } from "../../utils/eventHelpers";
+import { formatDateBR } from "../../utils/formatDateBR";
 
 import {
   CalendarDaysIcon,
   MapPinIcon,
   BanknotesIcon,
 } from "@heroicons/react/24/outline";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 export default function Eventos() {
 
   const { events, players } = useEvents();
   const navigate = useNavigate();
-
-  function formatDateBR(dateString: string) {
-    const [year, month, day] = dateString.split("-");
-    return `${day}/${month}/${year}`;
-  }
 
   const upcomingEvents = useMemo(() => {
     return getUpcomingEvents(events);
@@ -37,12 +34,6 @@ export default function Eventos() {
     }, {} as Record<string, Player[]>);
   }, [players]);
 
-  function formatCurrency(value: number): string {
-    return value.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-  }
 
   function renderEventCard(event: Event, isPast = false) {
 

@@ -5,6 +5,8 @@ import { Gallery, GalleryImage, useImages } from "../../contexts";
 import { Modal } from "../../components/Modal";
 import { TitlePage } from "../../components/TitlePage";
 
+import { formatDateBR as formatDateBr } from "../../utils/formatDateBR";
+
 import {
   XMarkIcon,
   ChevronLeftIcon,
@@ -114,7 +116,7 @@ export default function History() {
 
                   <div className="flex justify-between text-xs opacity-80">
 
-                    <span>{item.data}</span>
+                    <span>{formatDateBr(item.data)}</span>
 
                     <span>{item.images.length} fotos</span>
 

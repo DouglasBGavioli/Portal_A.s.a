@@ -37,6 +37,7 @@ export type Event = {
   price: number;
   max_players: number;
   slug: string;
+  bandages: number;
 };
 
 type RegisterResult = {

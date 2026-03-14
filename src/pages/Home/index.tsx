@@ -5,6 +5,7 @@ import { compareAsc, parseISO } from "date-fns";
 import { Alert } from "../../components/Alert";
 
 import { getNextEvent, parseEventDate } from "../../utils/eventHelpers";
+import { formatDateBR } from "../../utils/formatDateBR";
 
 import { useStore } from "../../contexts";
 import { Gallery, GalleryImage, useImages } from "../../contexts";
@@ -12,6 +13,7 @@ import { useMessages } from "../../contexts";
 import { useEvents } from "../../contexts/Eventos";
 
 import { BanknotesIcon, CalendarDaysIcon, MapPinIcon } from "@heroicons/react/24/outline";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 const buttonClass = "inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-brand-600";
 
@@ -114,18 +116,6 @@ export default function Home() {
       return compareAsc(dataB, dataA);
     });
   }, [gallery]);
-
-  function formatCurrency(value: number): string {
-    return value.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-  }
-
-  function formatDateBR(dateString: string) {
-    const [year, month, day] = dateString.split("-");
-    return `${day}/${month}/${year}`;
-  }
 
   return (
     <div className="w-full bg-[#f4f4f4] text-gray-800">

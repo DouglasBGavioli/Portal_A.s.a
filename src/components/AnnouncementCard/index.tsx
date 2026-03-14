@@ -1,3 +1,5 @@
+import { formatCurrency } from "../../utils/formatCurrency";
+
 type AnnouncementCardProps = {
   url: string;
   item?: string;
@@ -13,12 +15,6 @@ export default function AnnouncementCard({
   value,
   onClick,
 }: AnnouncementCardProps) {
-  function formatCurrency(value: number): string {
-    return value.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-  }
 
   const regex = /\D/g;
   const phone = contact.replace(regex, "");
