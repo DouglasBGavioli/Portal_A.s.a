@@ -99,7 +99,7 @@ export default function Integrantes() {
                   </span>
 
                   <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">
-                    Elite Team
+                    {member.team.toUpperCase()}
                   </span>
 
                 </div>

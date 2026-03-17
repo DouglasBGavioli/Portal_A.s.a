@@ -134,7 +134,7 @@ export default function Home() {
 
       <section ref={sectionRef} className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-12 md:px-8">
         <div className="text-center md:text-left">
-          <h2 className="text-3xl font-bold uppercase text-brand-700">Sobre a equipe</h2>
+          <h2 className="text-3xl font-bold uppercase text-brand-700 pb-4">Sobre as equipes</h2>
           <h3 className="text-lg font-medium text-gray-500">Elite Team Airsoft</h3>
         </div>
 
@@ -142,7 +142,6 @@ export default function Home() {
           <img src="/logoelite.png" alt="Logo elite" className="mx-auto h-44 w-44 object-contain" />
           <div className="space-y-4 text-gray-700">
             <p className="flex items-start gap-3">
-              <img src="/logo.png" alt="Logo asa" className="mt-2 h-10 w-10 object-contain" />
               Associação Santiaguense de Airsoft engloba o Elite Team Airsoft, equipe fundada em dezembro de 2019 por Cedenir Colpo na cidade de Santiago-RS, para prática de Airsoft.
             </p>
             <p>
@@ -150,8 +149,19 @@ export default function Home() {
             </p>
           </div>
         </div>
-
         <span className="text-center text-sm italic text-gray-600">Fortitudine et disciplina, Elite Team virtutis exemplar est.</span>
+        <h3 className="text-lg font-medium text-gray-500 text-center md:text-left">Alcatéia Airsoft Team</h3>
+        <div className="grid items-center gap-8 rounded-xl bg-white p-6 shadow md:grid-cols-[220px_1fr]">
+          <img src="/logoalcateia.png" alt="Logo alcatéia" className="mx-auto h-44 w-44 object-contain" />
+          <div className="space-y-4 text-gray-700">
+            <p className="flex items-start gap-3">
+              Associação Santiaguense de Airsoft engloba também o Alcatéia Airsoft Team.
+            </p>
+            <p>
+              Equipe criada no inicio de 2018 com os pilares de honra, lealdade e companheirismo.
+            </p>
+          </div>
+        </div>        
       </section>
 
       {activeEvent && (

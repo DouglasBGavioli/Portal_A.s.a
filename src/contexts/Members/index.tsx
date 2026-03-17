@@ -8,6 +8,7 @@ interface Member {
     xp: number;
     level: number;
     file: string;
+    team: string;
 }
 
 type MembersContextProvider = {
