@@ -13,6 +13,7 @@ import Header from "./components/Header";
 import Loja from "./pages/Loja";
 import Eventos from "./pages/Eventos";
 import Evento from "./pages/Evento";
+import Armeiros from "./pages/Armeiros";
 
 /* ========================= */
 /* PROVIDERS WRAPPER */
@@ -60,6 +61,7 @@ function App() {
               <Route path="/manutencao" element={<Manutencao />} />
               <Route path="/eventos" element={<Eventos />} />
               <Route path="/evento/:slug" element={<Evento />} />
+              <Route path="/armeiros" element={<Armeiros />} />
             </Routes>
           </main>
 

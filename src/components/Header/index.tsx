@@ -14,6 +14,7 @@ const links = [
   { name: "Eventos", path: "/eventos" },
   { name: "Galerias", path: "/galery" },
   { name: "Integrantes", path: "/integrantes" },
+  { name: "Armeiros", path: "/armeiros" },
   { name: "Loja", path: "/loja" },
 ];
 
