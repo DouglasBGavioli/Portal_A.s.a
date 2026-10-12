@@ -4,7 +4,7 @@ import { compareAsc, parseISO } from "date-fns";
 
 import { Alert } from "../../components/Alert";
 
-import { getNextEvent, parseEventDate } from "../../utils/eventHelpers";
+import { getNextEvent, isRegistrationOpen, parseEventDate } from "../../utils/eventHelpers";
 import { formatDateBR } from "../../utils/formatDateBR";
 
 import { useStore } from "../../contexts";
@@ -60,6 +60,10 @@ export default function Home() {
     return activeEvent.max_players -
       players.filter((p) => p.event_id === activeEvent.id).length;
   }, [activeEvent, players]);
+
+  const registrationOpen = useMemo(() => {
+    return activeEvent ? isRegistrationOpen(activeEvent) : false;
+  }, [activeEvent]);
 
   const handleData = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -175,91 +179,104 @@ export default function Home() {
 
           <div
             onClick={() => navigate(`/evento/${activeEvent.slug}`)}
-            className="group cursor-pointer overflow-hidden rounded-xl bg-white shadow transition hover:shadow-lg"
+            className="group cursor-pointer overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-300 hover:shadow-xl border border-gray-100"
           >
+            {/* 1. IMAGEM DO EVENTO NO TOPO */}
+            <div className="relative w-full aspect-video max-h-[560px] overflow-hidden">
+              <img
+                src={activeEvent.cover_image}
+                alt={activeEvent.name}
+                className="w-full h-full object-fill block transition-transform duration-300 group-hover:scale-[1.01]"
+              />
 
-            <div className="grid md:grid-cols-[450px_1fr]">
+              {/* Badge de status */}
+              <div className="absolute top-4 left-4 sm:top-5 sm:left-5 z-10">
+                <span className={`rounded-full px-4 py-1.5 text-xs font-bold text-white shadow-lg uppercase tracking-wider ${registrationOpen ? "bg-red-600" : "bg-amber-500"}`}>
+                  {!registrationOpen
+                    ? "Inscrições em breve"
+                    : remainingSlots === 0
+                      ? "Lotado"
+                      : "Inscrições abertas"}
+                </span>
+              </div>
+            </div>
 
-              {/* POSTER */}
-              <div className="relative bg-black flex items-center justify-center">
+            {/* 2. INFORMAÇÕES BEM DISPOSTAS ABAIXO DA IMAGEM */}
+            <div className="p-6 sm:p-8 flex flex-col gap-6">
 
-                <img
-                  src={activeEvent.cover_image}
-                  alt={activeEvent.name}
-                  className="h-[320px] w-full object-fit"
-                />
-
-                <div className="absolute left-3 top-3 rounded-full bg-red-600 px-3 py-1 text-xs font-bold text-white shadow uppercase">
-                  {remainingSlots === 0 ? "Lotado" : "Inscrições abertas"}
+              {/* Título e Contadores */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-6">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-widest text-brand-600">
+                    Operação Oficial A.S.A
+                  </span>
+                  <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">
+                    {activeEvent.name}
+                  </h3>
                 </div>
 
-              </div>
-
-              {/* INFO + MAPA */}
-              <div className="grid md:grid-cols-[1fr_400px] gap-6 p-6">
-
-                {/* INFOS */}
-                <div className="flex flex-col justify-between">
-
-                  <div className="flex flex-col gap-2">
-
-                    <h3 className="text-2xl font-bold text-gray-800">
-                      {activeEvent.name}
-                    </h3>
-
-                    <span className="flex items-center gap-2 text-sm text-gray-600">
-                      <MapPinIcon className="h-4 w-4 text-red-500" />
-                      {activeEvent.location}
-                    </span>
-
-                    <span className="flex items-center gap-2 text-sm text-gray-600">
-                      <CalendarDaysIcon className="h-4 w-4 text-blue-500" />
-                      {formatDateBR(activeEvent.date)}
-                    </span>
-
-                    <span className="flex items-center gap-2 text-sm text-gray-600">
-                      <BanknotesIcon className="h-4 w-4 text-green-500" />
-                      {activeEvent.price ? formatCurrency(activeEvent.price) : "Gratuito"}
-                    </span>
-
+                <div className="flex items-center gap-3">
+                  <div className="rounded-xl bg-gray-50 border border-gray-200/80 px-4 py-2.5 text-center min-w-[110px]">
+                    <p className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Dias restantes</p>
+                    <p className="text-2xl font-black text-brand-700 leading-tight mt-0.5">
+                      {daysLeft}
+                    </p>
                   </div>
 
-                  <div className="mt-6 flex gap-4">
-
-                    <div className="rounded-lg bg-brand-50 px-4 py-3">
-                      <p className="text-xs text-gray-500">Dias restantes</p>
-                      <p className="text-lg font-bold text-brand-700">
-                        {daysLeft}
-                      </p>
-                    </div>
-
-                    <div className="rounded-lg bg-brand-50 px-4 py-3">
-                      <p className="text-xs text-gray-500">Vagas restantes</p>
-                      <p className="text-lg font-bold text-brand-700">
+                  {registrationOpen ? (
+                    <div className="rounded-xl bg-brand-50 border border-brand-200/80 px-4 py-2.5 text-center min-w-[110px]">
+                      <p className="text-[10px] uppercase tracking-wider text-brand-700 font-bold">Vagas restantes</p>
+                      <p className="text-2xl font-black text-brand-700 leading-tight mt-0.5">
                         {remainingSlots}
                       </p>
                     </div>
+                  ) : (
+                    <div className="rounded-xl bg-amber-50 border border-amber-200/80 px-4 py-2.5 text-center min-w-[110px]">
+                      <p className="text-[10px] uppercase tracking-wider text-amber-700 font-bold">Inscrições</p>
+                      <p className="text-sm font-black text-amber-600 leading-tight mt-1.5 uppercase">
+                        Em breve
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
 
+              {/* Informações de Local/Data/Preço + Mapa */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+                <div className="space-y-4 text-sm sm:text-base text-gray-700">
+                  <div className="flex items-center gap-3">
+                    <CalendarDaysIcon className="h-5 w-5 text-blue-500 shrink-0" />
+                    <span className="font-semibold text-gray-900">{formatDateBR(activeEvent.date)}</span>
                   </div>
 
-                </div>
-
-                {/* MAPA */}
-                <div className="flex flex-col gap-3">
-
-                  <div className="overflow-hidden rounded-lg border">
-
-                    <iframe
-                      title="Mapa do evento"
-                      src={`https://maps.google.com/maps?q=${encodeURIComponent(activeEvent.location)}&z=14&output=embed`}
-                      className="h-[260px] w-full border-0"
-                      loading="lazy"
-                    />
-
+                  <div className="flex items-center gap-3">
+                    <MapPinIcon className="h-5 w-5 text-red-500 shrink-0" />
+                    <span className="font-medium text-gray-800">{activeEvent.location}</span>
                   </div>
 
+                  <div className="flex items-center gap-3">
+                    <BanknotesIcon className="h-5 w-5 text-green-600 shrink-0" />
+                    <span className="font-semibold text-gray-900">
+                      {activeEvent.price ? formatCurrency(activeEvent.price) : "Gratuito"}
+                    </span>
+                  </div>
+
+                  <div className="pt-2">
+                    <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-brand-500 px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm transition hover:bg-brand-600">
+                      Ver detalhes e local &rarr;
+                    </button>
+                  </div>
                 </div>
 
+                {/* Mapa */}
+                <div className="overflow-hidden rounded-xl border border-gray-200 h-[170px] sm:h-[190px] w-full">
+                  <iframe
+                    title="Mapa do evento"
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(activeEvent.location)}&z=14&output=embed`}
+                    className="h-full w-full border-0"
+                    loading="lazy"
+                  />
+                </div>
               </div>
 
             </div>

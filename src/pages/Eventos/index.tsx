@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { TitlePage } from "../../components/TitlePage";
 
 import { useEvents, Player, Event } from "../../contexts/Eventos";
-import { getPastEvents, getUpcomingEvents } from "../../utils/eventHelpers";
+import { getPastEvents, getUpcomingEvents, isRegistrationOpen } from "../../utils/eventHelpers";
 import { formatDateBR } from "../../utils/formatDateBR";
 
 import {
@@ -53,81 +53,87 @@ export default function Eventos() {
       <div
         key={event.id}
         onClick={() => navigate(`/evento/${event.slug}`)}
-        className={`group cursor-pointer overflow-hidden rounded-xl bg-white shadow hover:shadow-xl transition
-        ${isPast ? "grayscale opacity-70" : ""}`}
+        className={`group cursor-pointer overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col
+        ${isPast ? "grayscale opacity-75" : ""}`}
       >
 
-        <div className="grid grid-cols-[220px_1fr] h-[160px]">
+        {/* IMAGEM DO EVENTO NO TOPO */}
+        <div className="relative w-full aspect-video max-h-[340px] overflow-hidden">
+          <img
+            src={event.cover_image}
+            alt={event.name}
+            className="w-full h-full object-fill block transition-transform duration-300 group-hover:scale-[1.01]"
+          />
 
-          {/* POSTER */}
-
-          <div className="relative overflow-hidden bg-black">
-
-            <img
-              src={event.cover_image}
-              alt={event.name}
-              className="h-full w-full object-cover"
-            />
-
-            {!isPast && remaining !== null && (
-              <div className="absolute left-3 top-3 rounded bg-red-600 px-2 py-1 text-xs font-bold text-white uppercase">
-                {remaining === 0 ? "Lotado" : `${remaining} vagas`}
-              </div>
+          {/* BADGE DE STATUS */}
+          <div className="absolute top-3 left-3 z-10">
+            {!isPast && !isRegistrationOpen(event) && (
+              <span className="rounded-full bg-amber-500 px-3 py-1 text-[11px] font-bold text-white uppercase tracking-wider shadow">
+                Inscrições em breve
+              </span>
             )}
 
+            {!isPast && isRegistrationOpen(event) && remaining !== null && (
+              <span className="rounded-full bg-red-600 px-3 py-1 text-[11px] font-bold text-white uppercase tracking-wider shadow">
+                {remaining === 0 ? "Lotado" : `${remaining} vagas`}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* INFO INFERIOR */}
+        <div className="flex flex-1 flex-col justify-between p-5 gap-4">
+          <h3 className="text-xl font-bold tracking-tight text-gray-900 group-hover:text-brand-600 transition">
+            {event.name}
+          </h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600">
+            <span className="flex items-center gap-2">
+              <CalendarDaysIcon className="h-4 w-4 text-blue-500 shrink-0" />
+              <span className="font-semibold text-gray-800">{formatDateBR(event.date)}</span>
+            </span>
+
+            <span className="flex items-center gap-2">
+              <BanknotesIcon className="h-4 w-4 text-green-600 shrink-0" />
+              <span className="font-semibold text-gray-800">{event.price ? formatCurrency(event.price) : "Gratuito"}</span>
+            </span>
+
+            <span className="flex items-center gap-2 sm:col-span-2">
+              <MapPinIcon className="h-4 w-4 text-red-500 shrink-0" />
+              <span className="truncate font-medium">{event.location}</span>
+            </span>
           </div>
 
-          {/* INFO */}
-
-          <div className="flex flex-col justify-center gap-2 px-5">
-
-            <h3 className="text-lg font-semibold text-gray-800">
-              {event.name}
-            </h3>
-
-            <span className="flex items-center gap-2 text-sm text-gray-600">
-              <CalendarDaysIcon className="h-4 w-4 text-blue-500" />
-              {formatDateBR(event.date)}
-            </span>
-
-            <span className="flex items-center gap-2 text-sm text-gray-600">
-              <MapPinIcon className="h-4 w-4 text-red-500" />
-              {event.location}
-            </span>
-
-            <span className="flex items-center gap-2 text-sm text-gray-600">
-              <BanknotesIcon className="h-4 w-4 text-green-500" />
-              {event.price ? formatCurrency(event.price) : "Gratuito"}
-            </span>
-
-            {!isPast && event.max_players > 0 && (
-              <div className="mt-1">
-
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>Vagas</span>
-                  <span>
+          <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+            {!isPast && isRegistrationOpen(event) && event.max_players > 0 && (
+              <div className="w-full space-y-1">
+                <div className="flex justify-between text-[11px] font-medium text-gray-500">
+                  <span>Vagas preenchidas</span>
+                  <span className="font-bold text-gray-700">
                     {eventPlayers.length}/{event.max_players}
                   </span>
                 </div>
 
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-
+                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div
                     style={{ width: `${progress}%` }}
-                    className="h-full bg-brand-500"
+                    className="h-full bg-brand-500 rounded-full"
                   />
-
                 </div>
-
               </div>
             )}
 
-            {isPast && (
-              <span className="text-xs text-gray-500">
-                Evento encerrado
+            {!isPast && !isRegistrationOpen(event) && (
+              <span className="text-xs font-bold text-amber-600">
+                Inscrições em breve
               </span>
             )}
 
+            {isPast && (
+              <span className="text-xs font-semibold text-gray-400">
+                Evento encerrado
+              </span>
+            )}
           </div>
 
         </div>

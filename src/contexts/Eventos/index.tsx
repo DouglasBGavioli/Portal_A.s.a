@@ -38,6 +38,8 @@ export type Event = {
   max_players: number;
   slug: string;
   bandages: number;
+  /** false = evento apenas divulgado, inscrições ainda não liberadas */
+  registration_open?: boolean | null;
 };
 
 type RegisterResult = {
@@ -148,6 +150,10 @@ export function EventsProvider({ children }: { children: ReactNode }) {
 
     if (!selectedEvent) {
       return { error: "EVENT_NOT_FOUND" };
+    }
+
+    if (selectedEvent.registration_open === false) {
+      return { error: "REGISTRATION_CLOSED" };
     }
 
     try {

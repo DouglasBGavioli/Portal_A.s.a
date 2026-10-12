@@ -6,7 +6,7 @@ import { TitlePage } from "../../components/TitlePage";
 import Button from "../../components/Button";
 
 import { useEvents, Team, Player } from "../../contexts/Eventos";
-import { isPastEvent } from "../../utils/eventHelpers";
+import { isPastEvent, isRegistrationOpen } from "../../utils/eventHelpers";
 import { formatDateBR } from "../../utils/formatDateBR";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { formatTime } from "../../utils/formatTime";
@@ -62,6 +62,11 @@ export default function Evento() {
     const hasEventEnded = useMemo(() => {
         if (!event) return false;
         return isPastEvent(event);
+    }, [event]);
+
+    const registrationOpen = useMemo(() => {
+        if (!event) return false;
+        return isRegistrationOpen(event);
     }, [event]);
 
     /* PLAYERS POR TIME */
@@ -227,17 +232,17 @@ export default function Evento() {
             </Helmet>
             <TitlePage title={event.name} subtitle="Detalhes do evento" />
 
-            {/* HEADER */}
+            {/* IMAGEM DO EVENTO */}
+            <div className="relative w-full aspect-video max-h-[580px] overflow-hidden rounded-2xl shadow-md border border-gray-100">
+                <img
+                    src={event.cover_image}
+                    alt={event.name}
+                    className="w-full h-full object-fill block"
+                />
+            </div>
 
-            <div className="grid gap-8 md:grid-cols-[380px_1fr]">
-
-                <div className="overflow-hidden rounded-xl bg-black shadow-lg">
-                    <img
-                        src={event.cover_image}
-                        alt={event.name}
-                        className="w-full h-full object-cover"
-                    />
-                </div>
+            {/* CONTEÚDO PRINCIPAL (INFOS + MAPA + CRONOGRAMA) */}
+            <div className="flex flex-col gap-8">
 
                 <div className="flex flex-col gap-6">
 
@@ -311,12 +316,11 @@ export default function Evento() {
                             </div>
 
                         </div>
-
                         <div className="overflow-hidden rounded-lg border w-full">
                             <iframe
                                 title="Mapa do evento"
                                 src={`https://maps.google.com/maps?q=${encodeURIComponent(event.location)}&z=14&output=embed`}
-                                className="h-[250px] w-full border-0"
+                                className="h-[350px] w-full border-0"
                                 loading="lazy"
                             />
                         </div>
@@ -353,7 +357,7 @@ export default function Evento() {
 
             {/* TIMES */}
 
-            {eventTeams.length > 0 && (
+            {eventTeams.length > 0 && registrationOpen && (
                 <>
                     <h2 className="text-xl font-semibold text-gray-800">
                         Jogadores inscritos
@@ -445,7 +449,13 @@ export default function Evento() {
                 </div>
             )}
 
-            {!formMode && eventTeams.length > 0 && !hasEventEnded && (
+            {!hasEventEnded && !registrationOpen && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+                    As inscrições para este evento ainda não foram liberadas. Fique de olho, em breve abriremos as vagas!
+                </div>
+            )}
+
+            {!formMode && eventTeams.length > 0 && !hasEventEnded && registrationOpen && (
 
                 <Button
                     variant="primary"
@@ -460,7 +470,7 @@ export default function Evento() {
 
             {/* FORM */}
 
-            {formMode && !hasEventEnded && (
+            {formMode && !hasEventEnded && registrationOpen && (
 
                 <div className="flex flex-col gap-6 rounded-xl border bg-white p-6 shadow-sm">
 

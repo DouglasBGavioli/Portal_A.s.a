@@ -38,6 +38,10 @@ export function getPastEvents<T extends EventWithDate>(events: T[]) {
     );
 }
 
+export function isRegistrationOpen(event: { registration_open?: boolean | null }) {
+  return event.registration_open !== false;
+}
+
 export function getNextEvent<T extends EventWithDate>(events: T[]) {
   const upcoming = getUpcomingEvents(events);
   return upcoming.length > 0 ? upcoming[0] : null;
